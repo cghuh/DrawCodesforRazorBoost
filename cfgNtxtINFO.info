@@ -1,0 +1,29 @@
+<RootFilePath.cfg>
+rootfilepath
+
+
+
+
+<Settings.cfg>
+rootfilename, colorcode, colorcodeplus
+
+*rootfilename : first->data, last->signal, there's limit of Number of rootfile.
+*colorcode,colorcodeplus : eg)kRed+3 -> kRed 3
+
+
+
+
+<Rebin.cfg>
+variable rebinsize
+
+
+
+
+<NBins.txt>
+histkey , # of bins in your bin size settings
+
+
+
+
+<Yields.txt> : Not yet
+*Table CONTENTS : entries, uncertainties -> LatexCode
