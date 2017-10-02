@@ -763,200 +763,200 @@ Num.of bin = 7
 Bin Width = 600.000000
 
 Key = MTR_G
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_G_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_G_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Q_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Q_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_S
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_S_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_S_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_T
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_T_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_T_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_W
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_W_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_W_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Z
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Z_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_Z_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_T
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_T_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_T_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_W
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_W_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_noMT_W_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nodPhi_Q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nodPhi_Q_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nodPhi_Q_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_Q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_Q_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_Q_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_W
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_W_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_nonb_W_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_notau21_Q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_notau21_Q_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_notau21_Q_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_q_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_q_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_s
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_s_nj35
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_s_nj6
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_Q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_S
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_T
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_W
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_Z
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_q
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = MTR_topana_s
-Num.of bin = 200
-Bin Width = 10.000000
+Num.of bin = 40
+Bin Width = 50.000000
 
 Key = R2_G
 Num.of bin = 7

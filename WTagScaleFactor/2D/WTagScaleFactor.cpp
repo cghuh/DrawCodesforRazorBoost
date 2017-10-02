@@ -1,9 +1,9 @@
 //void DrawScaleFactor(TString histname){
-TH1F* DrawScaleFactor(TString histname){
+pair<TH1F*, TH1F*> DrawScaleFactor(TString histname){
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/gatbawi/palgongsan/chuh/susy/susy170922/";
+  TString dir = "/uscms/homes/c/chuh/work/susy170922/";
   TFile* file6 = TFile::Open(dir+"background.root");
   TFile* file7 = TFile::Open(dir+"data.root");
 
@@ -60,6 +60,8 @@ TH1F* DrawScaleFactor(TString histname){
   WtagFakeSF_Barrel->Divide(WtagFakeRate_Barrel_background);
   TH1F* WtagFakeSF_Endcap = (TH1F*)WtagFakeRate_Endcap_data->Clone();
   WtagFakeSF_Endcap->Divide(WtagFakeRate_Endcap_background);
+  WtagFakeSF_Barrel->SetName("b"+histname);
+  WtagFakeSF_Endcap->SetName("e"+histname);
 
 /*
   TString    name  = WtagFakeRate_Barrel_data->GetName();
@@ -368,14 +370,15 @@ TH1F* DrawScaleFactor(TString histname){
   era_lat->SetLineWidth(2);
   era_lat->Draw();
 
-  leg = new TLegend(0.31,0.20,0.9,0.45);
-  if(TString(histname).Contains("mW")) 			leg->SetHeader("W boson mass-tag");
-  else if(TString(histname).Contains("aW")) leg->SetHeader("W boson anti-tag");
-  else if(TString(histname).Contains("W"))  leg->SetHeader("W boson tag");
-  else if(TString(histname).Contains("mTop")) 			leg->SetHeader("Top quark mass-tag");
-  else if(TString(histname).Contains("aTop")) leg->SetHeader("Top quark anti-tag");
-  else if(TString(histname).Contains("Top"))  leg->SetHeader("Top quark tag");
+  leg = new TLegend(0.48,0.20,0.9,0.42);
   leg->SetTextSize(0.03);
+  if(TString(histname).Contains("mW"))		leg->SetHeader("W boson mass-tag");
+  else if(TString(histname).Contains("aW"))	leg->SetHeader("W boson anti-tag");
+  else if(TString(histname).Contains("W"))	leg->SetHeader("W boson tag");
+  else if(TString(histname).Contains("mTop")) 	leg->SetHeader("Top quark mass-tag");
+  else if(TString(histname).Contains("aTop"))	leg->SetHeader("Top quark anti-tag");
+  else if(TString(histname).Contains("Top"))	leg->SetHeader("Top quark tag");
+  leg->SetTextSize(0.02);
   leg->AddEntry(WtagFakeSF_Barrel,  							"Scale Factor, #eta < 1.5, stat only", "ep");
   leg->AddEntry(WtagFakeRate_Barrel_data,  			"#epsilon_{data}, #eta < 1.5, stat only", "ep");
   leg->AddEntry(WtagFakeRate_Barrel_background,  "#epsilon_{background}, #eta < 1.5, stat only", "ep");
@@ -392,22 +395,43 @@ TH1F* DrawScaleFactor(TString histname){
   //WtagFakeSF_Barrel->Write(); 
    //return hWtagFakeSF_Barrel;
    //return htool;
-   return 0;
+  // return 0;
+  return make_pair(WtagFakeSF_Barrel, WtagFakeSF_Endcap);
 
 }
 
 void WTagScaleFactor(){
-  TH1F* hW = DrawScaleFactor("W");
+
+  pair<TH1F*, TH1F*> p = DrawScaleFactor("W");
+  TH1F* hbW = p.first;
+  TH1F* heW = p.second;
+  p = DrawScaleFactor("aW");
+  TH1F* hbaW = p.first;
+  TH1F* heaW = p.second;
+  p = DrawScaleFactor("mW");
+  TH1F* hbmW = p.first;
+  TH1F* hemW = p.second;
+  p = DrawScaleFactor("Top");
+  TH1F* hbTop = p.first;
+  TH1F* heTop = p.second;
+  p = DrawScaleFactor("aTop");
+  TH1F* hbaTop = p.first;
+  TH1F* heaTop = p.second;
+  p = DrawScaleFactor("mTop");
+  TH1F* hbmTop = p.first;
+  TH1F* hemTop = p.second;
+
+  //TH1F* hW = DrawScaleFactor("W");
   //hW->SetNameTitle("W", "W");
-  TH1F* haW = DrawScaleFactor("aW");
+  //TH1F* haW = DrawScaleFactor("aW");
   //haW->SetNameTitle("aW", "aW");
-  TH1F* hmW = DrawScaleFactor("mW");
+  //TH1F* hmW = DrawScaleFactor("mW");
   //hmW->SetNameTitle("mW", "mW");
-  TH1F* hTop = DrawScaleFactor("Top");
+  //TH1F* hTop = DrawScaleFactor("Top");
   //hTop->SetNameTitle("Top", "Top");
-  TH1F* haTop = DrawScaleFactor("aTop");
-  //haTop->SetNameTitle("aTop", "aTop");
-  TH1F* hmTop = DrawScaleFactor("mTop");
+ // TH1F* haTop = DrawScaleFactor("aTop");
+ // //haTop->SetNameTitle("aTop", "aTop");
+  //TH1F* hmTop = DrawScaleFactor("mTop");
   //hmTop->SetNameTitle("mTop", "mTop");
   //hW->GetYaxis()->UnZoom();
   //haW->GetYaxis()->UnZoom();
@@ -416,11 +440,17 @@ void WTagScaleFactor(){
   //haTop->GetYaxis()->UnZoom();
   //hmTop->GetYaxis()->UnZoom();
 //
- // TFile* output = new TFile("WTopTagSF.root", "recreate");
- // hW->Write(); 
- // haW->Write(); 
- // hmW->Write(); 
- // hTop->Write(); 
- // haTop->Write(); 
- // hmTop->Write(); 
+  TFile* output = new TFile("WTopTagSF.root", "recreate");
+  hbW->Write(); 
+  heW->Write(); 
+  hbaW->Write(); 
+  heaW->Write(); 
+  hbmW->Write(); 
+  hemW->Write(); 
+  hbTop->Write(); 
+  heTop->Write(); 
+  hbaTop->Write(); 
+  heaTop->Write(); 
+  hbmTop->Write(); 
+  hemTop->Write(); 
 }

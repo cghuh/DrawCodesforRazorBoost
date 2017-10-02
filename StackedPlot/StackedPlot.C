@@ -271,6 +271,7 @@ void MakeControlPlots (int ColorCode[][15], int ColorCodePlus[], TFile *File[], 
     if(TString(histkey).Contains("Up"))continue;
     if(TString(histkey).Contains("Down"))continue;
     if(TString(histkey).Contains("MRR2"))continue;
+    if(TString(histkey).Contains("ChargedIso"))continue;
 
 		if( obj->InheritsFrom("TH1"))
 		{

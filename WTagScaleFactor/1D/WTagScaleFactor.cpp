@@ -4,7 +4,7 @@ TH1F* DrawScaleFactor(TString histname){
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
   //TString dir = "/gatbawi/palgongsan/chuh/susy/susy170818/";
-  TString dir = "/gatbawi/palgongsan/chuh/susy/susy170922/";
+  TString dir = "/uscms/homes/c/chuh/work/susy170922/;
   TFile* file6 = TFile::Open(dir+"background.root");
   TFile* file7 = TFile::Open(dir+"data.root");
 

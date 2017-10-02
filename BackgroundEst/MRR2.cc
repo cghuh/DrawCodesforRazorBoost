@@ -3,7 +3,7 @@ void ClosureTest(TString njet, TString channel){
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/gatbawi/palgongsan/chuh/susy/susy170915/";
+  TString dir = "/uscms/homes/c/chuh/work/susy170922/";
   TFile* file1 = TFile::Open(dir+"Multijet.root");
   TFile* file2 = TFile::Open(dir+"TTST.root");
   TFile* file3 = TFile::Open(dir+"WJet.root");

@@ -3,7 +3,7 @@ TH1D* DrawScaleFactor(TString histname, TString sample){
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/gatbawi/palgongsan/chuh/susy/susy170724/";
+  TString dir = "/uscms/homes/c/chuh/work/susy170922/";
   TFile* file6 = TFile::Open(dir+"TTJets_madgraphMLM_FastSim.root");
   TFile* file7 = TFile::Open(dir+"TTJets_madgraphMLM-pythia8.root");
 
@@ -346,6 +346,7 @@ void FullFastSimScaleFactor(){
   DrawScaleFactor("SubjetBTag", "Top");
   DrawScaleFactor("AK8Jet1Pt", "W");
   DrawScaleFactor("AK8Jet1Pt", "Top");
+/*
   TH1D* hFullFastSimWTagSF = DrawScaleFactor("AK8Jet1Pt_diffBin", "W");
   TH1D* hFullFastSimTopTagSF = DrawScaleFactor("AK8Jet1Pt_diffBin", "Top");
   hFullFastSimWTagSF->SetNameTitle("hFullFastSimWTagSF", "hFullFastSimWTagSF");
@@ -356,4 +357,5 @@ void FullFastSimScaleFactor(){
   TFile* output = new TFile("FullFastSimTagSF.root","recreate");
   hFullFastSimWTagSF->Write();
   hFullFastSimTopTagSF->Write();
+*/
 }
