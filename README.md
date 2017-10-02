@@ -46,6 +46,15 @@ WTagScaleFactor:
 	* 2D/WTagScaleFactor.cpp	: Calculate the W/Top fake rate and that's scale factor of data/simulation in pT, eta
 	* 2D/FullFastSimScaleFactor.cpp	: Calculate the W/Top fake rate and that's scale factor of FullSim/FastSim in pT, eta
 
+cutflow:
+
+	* cutflow*.py		: Make the tex file of cutflow table automatically. Set the background samples and selection.
+	* get*BGcomposition.py	: Make the tex file of background composition in each region automatically.
+
+shapecompare :
+	
+	* Compare the MR and R^2 shape in signal and background control in each background sample. For example, compare Q control region and signal region with Multijet sample. (TT-TvsS, WJet-WvsS, ZJet+DY-ZvsS)
+
 ## Contact Information
 
 Changgi Huh (changgi.huh@cern.ch)
