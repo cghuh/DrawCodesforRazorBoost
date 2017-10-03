@@ -9,26 +9,26 @@ git clone https://github.com/cghuh/DrawCodesforRazorBoost
 
 ## Code description
 
-### BackgroundEst:
-#### BackgroundEst/MRR2.cc:
+### BackgroundEst
+#### MRR2.cc:
 	* Make unrolled MR-R2 plot
 	* Caluclate the background estimation with bin-by-bin ratio using unrolled MR-R2  
 
-#### BackgroundEst/MRR2_universialRatio.cc:
+#### MRR2_universialRatio.cc:
 	* Caluclate the background estimation with universial ratio using unrolled MR-R2
 
-### BackgroundEst/BGest.cc:
+#### BGest.cc:
 	* Caluclate the background estimation using each MR, R2 
 
-### StackedPlot:
-#### StackedPlot/StackedPlot.C:
+### StackedPlot
+#### StackedPlot.C:
 	* Draw all of 1-D histograms in the root files
 
 	* Rebin.cfg		: rebin the variables what they contain the specific character
 	* RootFilePath.cfg	: Specify the root file path
 	* Settings.cfg		: Root files name for drawing (You have to fix the color option in StackedPlot.C dirctly
 
-#### StackedPlot/StackedPlot_2D.C:
+#### StackedPlot_2D.C:
 	* Draw all of 2-D histograms in the root files
 	* Use same configure files with StackedPlot.C
 
