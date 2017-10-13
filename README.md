@@ -33,7 +33,7 @@ git clone https://github.com/cghuh/DrawCodesforRazorBoost
 	* Use same configure files with StackedPlot.C
 
 ### TriggerEff:
-	* Calculate the trigger efficiency with 
+	* Calculate the trigger efficiency
 
 ### WTagScaleFactor:
 
@@ -43,6 +43,11 @@ git clone https://github.com/cghuh/DrawCodesforRazorBoost
 	* 1D/FullFastSimScaleFactor.cpp	: Calculate the W/Top fake rate and that's scale factor of FullSim/FastSim in pT
 	* 2D/WTagScaleFactor.cpp	: Calculate the W/Top fake rate and that's scale factor of data/simulation in pT, eta
 	* 2D/FullFastSimScaleFactor.cpp	: Calculate the W/Top fake rate and that's scale factor of FullSim/FastSim in pT, eta
+
+### ZBackgroundEstimation:
+
+	* Calculate the prompt photon purity using template fitting for z->vv background estimation
+	* ZpurityFit.cpp : fit the charged isolation in each MR, R^2, # of mass tagged W and ECAL barrel/endcap. Prompt template is gamma + jet sample (medium id), fake template is QCD sample (medium id, but invert sigma_ietaieta)
 
 ### cutflow:
 
