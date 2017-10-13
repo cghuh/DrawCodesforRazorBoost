@@ -237,6 +237,7 @@ void MakeControlPlots (int ColorCode[][15], int ColorCodePlus[], TFile *File[], 
 		File[0]->cd();
 
     if(obj->InheritsFrom("TH2")) continue;
+    if(obj->InheritsFrom("TH3")) continue;
     if(histkey=="nvtx")continue;
     if(histkey=="nvtx_rw")continue;
     if(histkey=="pileup_weight")continue;
@@ -246,7 +247,6 @@ void MakeControlPlots (int ColorCode[][15], int ColorCodePlus[], TFile *File[], 
     if(histkey=="pileup_data_up")continue;
     if(histkey=="pileup_data_down")continue;
     if(histkey=="pileup_mc")continue;
-    if(histkey=="totweight")continue;
     if(histkey=="nb")continue;
     if(histkey=="nw")continue;
     if(histkey=="ht_gen")continue;
@@ -258,8 +258,10 @@ void MakeControlPlots (int ColorCode[][15], int ColorCodePlus[], TFile *File[], 
     if(histkey=="LSPMass")continue;
     if(histkey=="StopMass")continue;
     if(histkey=="counts")continue;
+    if(histkey=="totweight")continue;
     if(TString(histkey).Contains("read_speed"))continue;
     if(TString(histkey).Contains("run"))continue;
+    if(TString(histkey).Contains("weight"))continue;
     if(TString(histkey).Contains("trigger"))continue;
     if(TString(histkey).Contains("pass"))continue;
     if(TString(histkey).Contains("syst"))continue;
@@ -433,8 +435,8 @@ map<TString, TH1F *> MCSTACK (char RootFileName[][200], map<TString , TH1F *> HI
     gPad->SetGridx();
     gPad->SetGridy();
 
-		TH1F *Tot_MC = (TH1F*)HIST[3][histname]->Clone();
-		for(int i=5;i<Num;i++) {Tot_MC->Add(HIST[i][histname]);}
+		TH1F *Tot_MC = (TH1F*)HIST[5][histname]->Clone();
+		for(int i=6;i<Num;i++) {Tot_MC->Add(HIST[i][histname]);}
 
 		Tot_MC->SetFillColor(13);
 		Tot_MC->SetFillStyle(3235);
