@@ -47,6 +47,7 @@ git clone https://github.com/cghuh/DrawCodesforRazorBoost
 ### ZBackgroundEstimation:
 
 	* Calculate the prompt photon purity using template fitting for z->vv background estimation
+	
 	* ZpurityFit.cpp : fit the charged isolation in each MR, R^2, # of mass tagged W and ECAL barrel/endcap. Prompt template is gamma + jet sample (medium id), fake template is QCD sample (medium id, but invert sigma_ietaieta)
 
 ### cutflow:
