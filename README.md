@@ -54,6 +54,10 @@ git clone https://github.com/cghuh/DrawCodesforRazorBoost
 
 	* cutflow*.py		: Make the tex file of cutflow table automatically. Set the background samples and selection.
 	* get*BGcomposition.py	: Make the tex file of background composition in each region automatically.
+	* list*			: List of samples of background and data for W and Top analysis.
+	1. If you get the code first time, you have to fix the data location(inputdir) of signal in python file.
+	2. When you use use this, type as "python cutflow_W.py list". You should python *W* list_W for W ana, python *Top* list_Top for Top ana.
+	3. After running the code, you should fix the cut name as our AN for cutflow table and put the name of signal and background region for the background estmation table also as AN.
 
 ### shapecompare :
 	* Compare the MR and R^2 shape in signal and background control in each background sample. For example, compare Q control region and signal region with Multijet sample. (TT-TvsS, WJet-WvsS, ZJet+DY-ZvsS)
