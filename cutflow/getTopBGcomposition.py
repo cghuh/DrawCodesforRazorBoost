@@ -36,38 +36,38 @@ def printCut(cut,info,signame="T1tttt_mGluino_1400_mLSP_300",option="counts"):
         #if "TTJets" in sample:
         #    ttj = ttj + effxs
         if "WJet" in sample:
-            wj = wj + effxs
+            wj = effxs
         if "Multijet" in sample:
-            qcd = qcd + effxs
+            qcd = effxs
         #if "WW" in sample:
         #    diboson = diboson + effxs
         #if "WZ" in sample:
         #    diboson = diboson + effxs
         #if "ZZ" in sample:
         #    diboson = diboson + effxs
-        if "Multiboson" in sample:
-            diboson = diboson + effxs
+        if "Multiboson+TTX" in sample:
+            diboson = effxs
         if "TT.root" in sample:
-            tt = tt + effxs
+            tt = effxs
         if "ST" in sample:
-            st = st + effxs
+            st = effxs
         if "ZJet" in sample:
-            zjets = zjets + effxs
+            zjets = effxs
         if "DYToLL" in sample: 
-            DYJet = DYJet + effxs
+            DYJet = effxs
         #if "_WZZ_" in sample or "_WWZ" in sample or "_WWW_" in sample or "_WWGJets_" in sample or "_ZZZ" in sample:
         #    triboson = triboson + effxs
         #if "TTGJets_" in sample or "_TTbarW" in sample or "_ttbarZ_" in sample or "_TTWWJets_" in sample:
         if "GJet" in sample:
-            ttX = ttX + effxs
+            ttX = effxs
         #if "_DYToCC_" in sample or "_DYToBB_" in sample:
         #    DYhad = DYhad + effxs
         #if "_Wbb_" in sample:
         #    Wbb = Wbb + effxs
         if signame in sample:
-            sig = sig + effxs
+            sig = effxs
         if "data" in sample:
-            data = data + effxs
+            data = effxs
     total = tt + wj + qcd + diboson + st + zjets + ttX + DYJet
     if option == "counts":
         print "Cut %s \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (cut,qcd,tt,wj,diboson,st,zjets,ttX,DYJet,sig,data)
@@ -95,14 +95,16 @@ def getTTjetsComposition(cut,counts_allhad,counts_semilep,counts_dilep):
 
 
 def makeCutflowTable(info,intlumi,cuts,signame):
-    table = open("cutflow_TopAna.tex",'w')
+    table = open("BGpercent_TopAna.tex",'w')
     # get the table header stuff
     header = """\\begin{sidewaystable}[p]
 \\centering
-\\caption{Cutflow table, event counts are normalized to $%(lumi)s\\textrm{fb}^{-1}$. }
+\\fontsize{8 pt}{1 em}
+\\selectfont
+\\caption{Percentages of event counts for different processes in the various Top analysis regions. }
 \\begin{tabular}{| l || c | c | c | c | c | c | c | c |}
 \\hline
-Selection & Multijet & TT & WJets & Multiboson & ST & ZJets & GJet & DYToLL  \\\\ \\hline
+Selection & Multijet & TT & WJets & Multiboson+TTX & ST & ZJets & GJet & DYToLL \\\\ \\hline
 """ % {"lumi":intlumi}
     table.write(header)
 
@@ -146,22 +148,26 @@ def allcuts():
     #        "1 lepton", "nb = 0", "nW >= 1", "mDPhi >= 0.4", "30 <= mT < 100", "W",
     #        ]
     cuts = [
+"NoCuts",
 #"NoCuts", "Skim_1JetAK8",
 # "Baseline_3Jet", "Baseline_MR_R2","Q_cut_HLT",
-            #"X_cut_3Jet", "X_cut_MR_R2",
-"X_cut_HLT",
-						#"A_cut_0Ele", "A_cut_0Mu", "A_cut_1Top", 
-"A_cut_mDPhi",
-						#"X_cut_0Ele", "X_cut_0Mu", "X_cut_1aTop", 
-"X_cut_mDPhi",
-						#"V_cut_1Lep", "V_cut_1Top", "V_cut_mDPhi", 
-"V_cut_MT",
-						#"C_cut_1Lep", "C_cut_1mTop", "C_cut_mDPhi", 
-"C_cut_MT",
-						#"F_cut_2Lep", "F_cut_1mW", "F_cut_mDPhill", 
-"F_cut_Mll",
-"x_cut_mDPhi",
-"a_cut_InvmDPhi",
+#            "Q_cut_3Jet","Q_cut_MR_R2",
+# "Q_cut_HLT",
+#						"S_cut_0Ele", "S_cut_0Mu", "S_cut_1b", "S_cut_1W", 
+"S_cut_mDPhi",
+"s_cut_InvmDPhi",
+#						"Q_cut_0Ele", "Q_cut_0Mu", "Q_cut_0b", "Q_cut_1aW", 
+#"Q_cut_InvmDPhi",
+"Q_cut_InvmDPhi0p3",
+"q_cut_mDPhi",
+#						"T_cut_1Lep", "T_cut_1b", "T_cut_1W", "T_cut_mDPhi", 
+"T_cut_MT",
+#						"W_cut_1Lep", "W_cut_0b", "W_cut_1mW", "W_cut_mDPhi", 
+"W_cut_MT",
+"G_cut_mDPhi",
+#						"Z_cut_2Lep", "Z_cut_1mW", "Z_cut_mDPhill", 
+"Z_cut_Mll",
+"L_cut_MT",
             ]
     return cuts
 
@@ -189,7 +195,7 @@ if __name__ == '__main__':
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140610_FullStatusReport"
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140729_preApp_comments"
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140814"
-    inputdir = "/gatbawi/palgongsan/chuh/susy/susy170830/"
+    inputdir = "/uscms_data/d3/chuh/added_top/"
     #analyzer = "rzrBoostMC"
     #signame = "T1ttcc_1000_325_300"
     signame = "T1tttt_mGluino_1400_mLSP_300"

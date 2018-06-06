@@ -4,7 +4,7 @@ from ROOT import TFile
 from math import sqrt 
 
 #def printCut(cut,info,signame="T1ttcc",option="counts"):
-def printCut(cut,info,signame="T1tttt_mGluino_1400_mLSP_300",option="counts"):
+def printCut(cut,info,signame="T5ttcc_mGluino_1400_mLSP_300",option="counts"):
     #ttj = 0
     wj = 0
     qcd = 0
@@ -29,45 +29,45 @@ def printCut(cut,info,signame="T1tttt_mGluino_1400_mLSP_300",option="counts"):
         #print cut
         #c = t[0][cut]
         c = t[cut]
-        print c
+        #print c
         #w = t[1]
         effxs = c 
         #effxs = 0
         #if "TTJets" in sample:
         #    ttj = ttj + effxs
         if "WJet" in sample:
-            wj = wj + effxs
+            wj = effxs
         if "Multijet" in sample:
-            qcd = qcd + effxs
+            qcd = effxs
         #if "WW" in sample:
         #    diboson = diboson + effxs
         #if "WZ" in sample:
         #    diboson = diboson + effxs
         #if "ZZ" in sample:
         #    diboson = diboson + effxs
-        if "Multiboson" in sample:
-            diboson = diboson + effxs
+        if "Multiboson+TTX" in sample:
+            diboson = effxs
         if "TT.root" in sample:
-            tt = tt + effxs
+            tt = effxs
         if "ST" in sample:
-            st = st + effxs
+            st = effxs
         if "ZJet" in sample:
-            zjets = zjets + effxs
+            zjets = effxs
         if "DYToLL" in sample: 
-            DYJet = DYJet + effxs
+            DYJet = effxs
         #if "_WZZ_" in sample or "_WWZ" in sample or "_WWW_" in sample or "_WWGJets_" in sample or "_ZZZ" in sample:
         #    triboson = triboson + effxs
         #if "TTGJets_" in sample or "_TTbarW" in sample or "_ttbarZ_" in sample or "_TTWWJets_" in sample:
         if "GJet" in sample:
-            ttX = ttX + effxs
+            ttX = effxs
         #if "_DYToCC_" in sample or "_DYToBB_" in sample:
         #    DYhad = DYhad + effxs
         #if "_Wbb_" in sample:
         #    Wbb = Wbb + effxs
         if signame in sample:
-            sig = sig + effxs
-        if "data" in sample:
-            data = data + effxs
+            sig = effxs
+        if "data." in sample:
+            data = effxs
     total = tt + wj + qcd + diboson + st + zjets + ttX + DYJet
     if option == "counts":
         print "Cut %s \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (cut,qcd,tt,wj,diboson,st,zjets,ttX,DYJet,sig,data)
@@ -99,10 +99,12 @@ def makeCutflowTable(info,intlumi,cuts,signame):
     # get the table header stuff
     header = """\\begin{sidewaystable}[p]
 \\centering
-\\caption{Cutflow table, event counts are normalized to $%(lumi)s\\textrm{fb}^{-1}$. }
+\\fontsize{8 pt}{1 em}
+\\selectfont
+\\caption{Cutflow table for the W analysis. Event counts are normalized to $%(lumi)s\\textrm{fb}^{-1}$. }
 \\begin{tabular}{| l || c | c | c | c | c | c | c | c || c || c || c |}
 \\hline
-Cut & Multijet & TT & WJets & Multiboson & ST & ZJets & GJet & DYToLL & Total & Signal & Data \\\\ \\hline
+Cut & Multijet & TT & WJets & Multiboson+TTX & ST & ZJets & GJet & DYToLL & Total & Signal & Data \\\\ \\hline
 """ % {"lumi":intlumi}
     table.write(header)
 
@@ -145,15 +147,24 @@ def allcuts():
     #        "1 lepton", "nb >= 1", "nW >= 1", "mDPhi >= 0.4", "mT < 100", "T",
     #        "1 lepton", "nb = 0", "nW >= 1", "mDPhi >= 0.4", "30 <= mT < 100", "W",
     #        ]
-    cuts = ["NoCuts", "Skim_1JetAK8",
+    cuts = ["NoCuts", "Q_cut_1JetAK8",
+						#"Baseline_signal_mass_selection",
 # "Baseline_3Jet", "Baseline_MR_R2","Q_cut_HLT",
-            "Q_cut_3Jet","Q_cut_MR_R2",
- "Q_cut_HLT",
-						"Q_cut_0Ele", "Q_cut_0Mu", "Q_cut_0b", "Q_cut_1aW", "Q_cut_InvmDPhi0p3",
-						"S_cut_0Ele", "S_cut_0Mu", "S_cut_1b", "S_cut_1W", "S_cut_mDPhi",
+            "S_cut_NJet","S_cut_R2", "S_cut_HLT",
+						"S_cut_0Ele", "S_cut_0Mu", "S_cut_0Tau",
+						"S_cut_1b", "S_cut_1W", "S_cut_mDPhi",
+            "Q_cut_NJet","Q_cut_R2", "Q_cut_HLT",
+						"Q_cut_0Ele", "Q_cut_0Mu", "Q_cut_0Tau",
+						"Q_cut_0b", "Q_cut_1aW", "Q_cut_InvmDPhi0p3",
+            "T_cut_NJet","T_cut_R2", "T_cut_HLT",
 						"T_cut_1Lep", "T_cut_1b", "T_cut_1W", "T_cut_mDPhi", "T_cut_MT",
+            "W_cut_NJet","W_cut_R2", "W_cut_HLT",
 						"W_cut_1Lep", "W_cut_0b", "W_cut_1mW", "W_cut_mDPhi", "W_cut_MT",
-						"Z_cut_2Lep", "Z_cut_1mW", "Z_cut_mDPhill", "Z_cut_Mll",
+            "L_cut_NJet",
+						"L_cut_R2", "L_cut_HLT", "L_cut_0b", "L_cut_1Lep", "L_cut_1mW", "L_cut_mDPhi", "L_cut_MT",
+            "Z_cut_NJet",
+						"Z_cut_R2ll", "Z_cut_HLT", "Z_cut_2Lep", "Z_cut_1mW", "Z_cut_mDPhill", "Z_cut_Mll",
+						"G_cut_1Pho", "G_cut_NJet", "G_cut_R2", "G_cut_HLT", "G_cut_0Ele", "G_cut_0Mu", "G_cut_0Tau", "G_cut_1mW", "G_cut_mDPhi",
             ]
     return cuts
 
@@ -181,11 +192,12 @@ if __name__ == '__main__':
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140610_FullStatusReport"
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140729_preApp_comments"
     #inputdir = "/afs/cern.ch/work/n/nstrobbe/RazorBoost/GIT/Results/results_20140814"
-    inputdir = "/gatbawi/palgongsan/chuh/susy/susy170830/"
+    inputdir = "/uscms_data/d3/chuh/added_W/"
+    #inputdir = "/gatbawi/palgongsan/chuh/susy/susy170830/"
     #analyzer = "rzrBoostMC"
     #signame = "T1ttcc_1000_325_300"
-    signame = "T1tttt_mGluino_1400_mLSP_300"
-    sigxs = 0.0243547
+    signame = "T5ttcc_mGluino_1400_mLSP_300"
+    sigxs = 0.00470323
     
     # get signal info
     #fs = TFile.Open(inputdir + "/summary/" + analyzer + "_" + signame + ".root") #It should be fixed.
@@ -264,7 +276,6 @@ if __name__ == '__main__':
     print "Cut \t \t qcd \t tt \t wj \t diboson \t single top \t ZJet \t TTX \t DYJet \t signal \t data \n"
     #print "counts and percentage for %d fb-1 of data" % (intlumi)
     makeCutflowTable(info,intlumi,cuts,signame)
-    print "No error in here"
 
     print "\n"
     
