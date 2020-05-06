@@ -1,5 +1,4 @@
 TH1D* Correction(TString period, TString region){
-  delete gROOT->FindObject("bkg");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
@@ -151,7 +150,6 @@ TH1D* Correction(TString period, TString region){
 }
 
 TH1D* NjetCorrection(TString period, TString region){
-  delete gROOT->FindObject("bkg");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
