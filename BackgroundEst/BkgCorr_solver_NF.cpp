@@ -1,9 +1,10 @@
 TH1D* Correction(TString period, TString region){
+  delete gROOT->FindObject("bkg");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
   TString dir = "/Users/huhchanggi/temp/200423/";
-  TFile* file0 = TFile::Open(dir+"run_2020_04_24.root");
+  TFile* file0 = TFile::Open(dir+"run_2020_04_28.root");
 
   TString histname[3][9];
   file0->cd("Counts_vs_MRR2Bins/Syst_vs_MRR2Bins");
@@ -52,7 +53,7 @@ TH1D* Correction(TString period, TString region){
   for(int i=0; i<3; i++) {
     for(int j=0; j<9; j++) {
       name = "bkg_"+to_string(i)+to_string(j);
-      bkg[i][j] = new TH1D("bkg", "", binsize, bin);
+      bkg[i][j] = new TH1D(name.c_str(), "", binsize, bin);
       //bkg[i][j] = (TH1D*)bkg2D[0][0]->ProjectionX("temp");
       for(int k=1;k<=bkg2D[0][0]->GetNbinsX();k++) {
         if(bkg2D[i][j] == NULL) {
@@ -150,11 +151,12 @@ TH1D* Correction(TString period, TString region){
 }
 
 TH1D* NjetCorrection(TString period, TString region){
+  delete gROOT->FindObject("bkg");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
   TString dir = "/Users/huhchanggi/temp/200423/";
-  TFile* file0 = TFile::Open(dir+"run_2020_04_24.root");
+  TFile* file0 = TFile::Open(dir+"run_2020_04_28.root");
 
   TString histname[3][9];
   file0->cd("Counts_vs_NJetBins/Syst_vs_NJetBins");
@@ -203,7 +205,7 @@ TH1D* NjetCorrection(TString period, TString region){
   for(int i=0; i<3; i++) {
     for(int j=0; j<9; j++) {
       name = "bkg_"+to_string(i)+to_string(j);
-      bkg[i][j] = new TH1D("bkg", "", binsize, bin);
+      bkg[i][j] = new TH1D(name.c_str(), "", binsize, bin);
       for(int k=1;k<=bkg2D[0][0]->GetNbinsX();k++) {
         if(bkg2D[i][j] == NULL) {
           cout << "NULL " << i << ", " << j << endl;
