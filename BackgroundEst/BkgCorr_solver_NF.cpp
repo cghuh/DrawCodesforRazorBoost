@@ -1,45 +1,476 @@
-tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString obj){
+tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<double>, vector<double>> CalcErrors(TH1D* d1[3], TH1D* b1[3][9], string sample) {
+  cout << sample << endl;
+  TRandom3 r(0);
+  gRandom->SetSeed(time(0));
+  TFile* output;
+  TString name1, name2;
+  if(sample=="MRR220161Boost") output = new TFile("CF_Error.root", "recreate");
+  else output = new TFile("CF_Error.root", "update");
+  TH1D* data[3];
+  TH1D* QB[3];
+  TH1D* TB[3];
+  TH1D* WB[3];
+  for(int i=0; i<3; i++) {
+    data[i]  = (TH1D*)d1[i]->Clone();
+    QB[i]    = (TH1D*)b1[i][1]->Clone();
+    TB[i]    = (TH1D*)b1[i][2]->Clone();
+    WB[i]    = (TH1D*)b1[i][4]->Clone();
+  }
+  TMatrix D(3,3);
+  TMatrix Q(3,3);
+  TMatrix T(3,3);
+  TMatrix W(3,3);
+  string name;
+  TH1D* QError[data[0]->GetNbinsX()];
+  TH1D* TError[data[0]->GetNbinsX()];
+  TH1D* WError[data[0]->GetNbinsX()];
+  double nom_Q, nom_T, nom_W;
+  vector<double> err_Q, err_T, err_W;
+  TF1* gaus_D;
+  TF1* gaus_Q;
+  TF1* gaus_T;
+  TF1* gaus_W;
+  double ran_Q, ran_T, ran_W, ran_D, temp;
+  double bin_up, bin_dw;
+  int num=1e6;
+  TH1D* Err_Up_Q = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Up_T = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Up_W = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Dw_Q = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Dw_T = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Dw_W = (TH1D*)d1[0]->Clone();
+  TCanvas* c1, *c2, *c3;
+  TLine* line;
+  std::vector<double> temp1, temp2, temp3, temp4, temp5, temp6;
+
+  for(int i=1; i<= data[0]->GetNbinsX();i++) {
+    name = "QError_"+sample+to_string(i);
+    QError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    c1 = new TCanvas(name.c_str(), "", 900, 900);
+    name = "TError_"+sample+to_string(i);
+    TError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    c2 = new TCanvas(name.c_str(), "", 900, 900);
+    name = "WError_"+sample+to_string(i);
+    WError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    c3 = new TCanvas(name.c_str(), "", 900, 900);
+    if(i > 1 && TString(sample).Contains("MRR2")) {
+      if(i > 3 && TString(sample).Contains("MRR2")) {
+        QError[i-1]->Rebin(100);
+        TError[i-1]->Rebin(20);
+        WError[i-1]->Rebin(20);
+      }
+      else { 
+        QError[i-1]->Rebin(5);
+        TError[i-1]->Rebin(5);
+        WError[i-1]->Rebin(5);
+      }
+    }
+    for(int m=0; m<3; m++) { // region
+      D[m][0] = QB[m]->GetBinContent(i);
+      D[m][1] = TB[m]->GetBinContent(i);
+      D[m][2] = WB[m]->GetBinContent(i);
+      Q[m][0] = data[m]->GetBinContent(i);
+      Q[m][1] = TB[m]->GetBinContent(i);
+      Q[m][2] = WB[m]->GetBinContent(i);
+      T[m][0] = QB[m]->GetBinContent(i);
+      T[m][1] = data[m]->GetBinContent(i);
+      T[m][2] = WB[m]->GetBinContent(i);
+      W[m][0] = QB[m]->GetBinContent(i);
+      W[m][1] = TB[m]->GetBinContent(i);
+      W[m][2] = data[m]->GetBinContent(i);
+    }
+    nom_Q = Q.Determinant()/D.Determinant();
+    nom_T = T.Determinant()/D.Determinant();
+    nom_W = W.Determinant()/D.Determinant();
+    for(int j=0; j<num; j++) {
+      if(j%200000 == 0) cout << j << ", " << (double)j/num*100 << "[%] finsihed" << endl;
+      for(int k=0; k<3; k++) { // region
+        ran_D = gRandom->Gaus(data[k]->GetBinContent(i), data[k]->GetBinError(i));
+        ran_Q = gRandom->Gaus(QB[k]->GetBinContent(i), QB[k]->GetBinError(i));
+        ran_T = gRandom->Gaus(TB[k]->GetBinContent(i), TB[k]->GetBinError(i));
+        ran_W = gRandom->Gaus(WB[k]->GetBinContent(i), WB[k]->GetBinError(i));
+        D[k][0] = ran_Q;
+        D[k][1] = ran_T;
+        D[k][2] = ran_W;
+        Q[k][0] = ran_D;
+        Q[k][1] = ran_T;
+        Q[k][2] = ran_W;
+        T[k][0] = ran_Q;
+        T[k][1] = ran_D;
+        T[k][2] = ran_W;
+        W[k][0] = ran_Q;
+        W[k][1] = ran_T;
+        W[k][2] = ran_D;
+      }
+      QError[i-1]->Fill(nom_Q-(Q.Determinant()/D.Determinant()));
+      TError[i-1]->Fill(nom_T-(T.Determinant()/D.Determinant()));
+      WError[i-1]->Fill(nom_W-(W.Determinant()/D.Determinant()));
+      err_Q.push_back(nom_Q-Q.Determinant()/D.Determinant());
+      err_T.push_back(nom_T-T.Determinant()/D.Determinant());
+      err_W.push_back(nom_W-W.Determinant()/D.Determinant());
+    }
+
+    temp = 0;
+    bin_up = 0; bin_dw = 0;
+    for(int bin=QError[i-1]->GetMaximumBin();bin<=QError[i-1]->GetNbinsX();bin++) {
+      temp += QError[i-1]->GetBinContent(bin);
+      temp += QError[i-1]->GetBinContent(2*QError[i-1]->GetMaximumBin()-bin-1);
+      if(temp/num > 0.68) continue;
+      else {
+        bin_up = QError[i-1]->GetBinCenter(bin); 
+        bin_dw = QError[i-1]->GetBinCenter(2.*QError[i-1]->GetMaximumBin()-bin-1);
+      }
+    }
+    cout << "Q : " << bin_up << ", " << bin_dw << endl;
+    Err_Up_Q->SetBinContent(i, bin_up);
+    Err_Up_Q->SetBinError(i, 0);
+    Err_Dw_Q->SetBinContent(i, bin_dw);
+    Err_Dw_Q->SetBinError(i, 0);
+    temp1.push_back(bin_up);
+    temp4.push_back(bin_dw);
+
+    if(TString(sample).Contains("MRR2")) {
+      QError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      TError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      WError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      if(i==1) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
+        WError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
+      }
+      else if (i > 2) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+        TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      }
+    } else {
+      QError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      WError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+    }
+
+    c1->cd();
+    QError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
+    QError[i-1]->Draw();
+    auto leg = new TLegend(0.60,0.80,0.9,0.9);
+    if(TString(sample).Contains("2016")) name1 = "2016";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else name1 = "2018";
+    if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
+    else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
+    leg->SetHeader(name1+", CF_{QCD}"+name2+" "+to_string(i)+" bin");
+    leg->Draw();
+
+    line = new TLine(bin_up,0,bin_up,1.05*QError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    line = new TLine(bin_dw,0,bin_dw,1.05*QError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    c1->Write();
+
+    temp = 0;
+    bin_up = 0; bin_dw = 0;
+    for(int bin=TError[i-1]->GetMaximumBin();bin<=TError[i-1]->GetNbinsX();bin++) {
+      temp += TError[i-1]->GetBinContent(bin);
+      temp += TError[i-1]->GetBinContent(2*TError[i-1]->GetMaximumBin()-bin-1);
+      if(temp/num > 0.68) continue;
+      else {
+        bin_up = TError[i-1]->GetBinCenter(bin); 
+        bin_dw = TError[i-1]->GetBinCenter(2.*TError[i-1]->GetMaximumBin()-bin-1);
+      }
+    }
+    cout << "T : " << bin_up << ", " << bin_dw << endl;
+    Err_Up_T->SetBinContent(i, bin_up);
+    Err_Up_T->SetBinError(i, 0);
+    Err_Dw_T->SetBinContent(i, bin_dw);
+    Err_Dw_T->SetBinError(i, 0);
+    temp2.push_back(bin_up);
+    temp5.push_back(bin_dw);
+
+    c2->cd();
+    TError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
+    TError[i-1]->Draw();
+    leg = new TLegend(0.60,0.80,0.9,0.9);
+    if(TString(sample).Contains("2016")) name1 = "2016";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else name1 = "2018";
+    if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
+    else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
+    leg->SetHeader(name1+", CF_{Top}"+name2+" "+to_string(i)+" bin");
+    leg->Draw();
+
+    line = new TLine(bin_up,0,bin_up,1.05*TError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    line = new TLine(bin_dw,0,bin_dw,1.05*TError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    c2->Write();
+
+    temp = 0;
+    bin_up = 0; bin_dw = 0;
+    for(int bin=WError[i-1]->GetMaximumBin();bin<=WError[i-1]->GetNbinsX();bin++) {
+      temp += WError[i-1]->GetBinContent(bin);
+      temp += WError[i-1]->GetBinContent(2*WError[i-1]->GetMaximumBin()-bin-1);
+      if(temp/num > 0.68) continue;
+      else {
+        bin_up = WError[i-1]->GetBinCenter(bin); 
+        bin_dw = WError[i-1]->GetBinCenter(2.*WError[i-1]->GetMaximumBin()-bin-1);
+      }
+    }
+    cout << "W : " << bin_up << ", " << bin_dw << endl;
+    Err_Up_W->SetBinContent(i, bin_up);
+    Err_Up_W->SetBinError(i, 0);
+    Err_Dw_W->SetBinContent(i, bin_dw);
+    Err_Dw_W->SetBinError(i, 0);
+    temp3.push_back(bin_up);
+    temp6.push_back(bin_dw);
+
+    c3->cd();
+    WError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
+    WError[i-1]->Draw();
+    leg = new TLegend(0.60,0.80,0.9,0.9);
+    if(TString(sample).Contains("2016")) name1 = "2016";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else name1 = "2018";
+    if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
+    else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
+    leg->SetHeader(name1+", CF_{Wjets}"+name2+" "+to_string(i)+" bin");
+    leg->Draw();
+    line = new TLine(bin_up,0,bin_up,1.05*WError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    line = new TLine(bin_dw,0,bin_dw,1.05*WError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    c3->Write();
+  }
+  output->Close();
+  return make_tuple(temp1, temp2, temp3, temp4, temp5, temp6);
+}
+
+tuple<vector<double>, vector<double>, vector<double>, vector<double>> CalcLErrors(TH1D* d1[2], TH1D* b1[2][9], string sample) {
+  cout << sample << endl;
+  TRandom3 r(0);
+  gRandom->SetSeed(time(0));
+  TFile* output;
+  TString name1, name2;
+  output = new TFile("CF_Error.root", "update");
+  TH1D* data[2];
+  TH1D* LB[2];
+  TH1D* TB[2];
+  for(int i=0; i<2; i++) {
+    data[i]  = (TH1D*)d1[i]->Clone();
+    LB[i]    = (TH1D*)b1[i][4]->Clone();
+    TB[i]    = (TH1D*)b1[i][2]->Clone();
+  }
+  TMatrix D(2,2);
+  TMatrix L(2,2);
+  TMatrix T(2,2);
+  string name;
+  TH1D* LError[data[0]->GetNbinsX()];
+  TH1D* TError[data[0]->GetNbinsX()];
+  double nom_L, nom_T;
+  vector<double> err_L, err_T;
+  TF1* gaus_D;
+  TF1* gaus_L;
+  TF1* gaus_T;
+  double ran_L, ran_T, ran_D, temp;
+  double bin_up, bin_dw;
+  int num=1e6;
+  TH1D* Err_Up_L = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Up_T = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Dw_L = (TH1D*)d1[0]->Clone();
+  TH1D* Err_Dw_T = (TH1D*)d1[0]->Clone();
+  TCanvas* c1, *c2, *c3;
+  TLine* line;
+  std::vector<double> temp1, temp2, temp3, temp4, temp5, temp6;
+
+  for(int i=1; i<= data[0]->GetNbinsX();i++) {
+    name = "LError_"+sample+to_string(i);
+    LError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    c1 = new TCanvas(name.c_str(), "", 900, 900);
+    name = "LTError_"+sample+to_string(i);
+    TError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    c2 = new TCanvas(name.c_str(), "", 900, 900);
+    if(i > 1 && TString(sample).Contains("MRR2")) {
+      LError[i-1]->Rebin(5);
+      TError[i-1]->Rebin(5);
+    }
+    for(int m=0; m<2; m++) { // region
+      D[m][0] = LB[m]->GetBinContent(i);
+      D[m][1] = TB[m]->GetBinContent(i);
+      L[m][0] = data[m]->GetBinContent(i);
+      L[m][1] = TB[m]->GetBinContent(i);
+      T[m][0] = LB[m]->GetBinContent(i);
+      T[m][1] = data[m]->GetBinContent(i);
+    }
+    nom_L = L.Determinant()/D.Determinant();
+    nom_T = T.Determinant()/D.Determinant();
+    for(int j=0; j<num; j++) {
+      if(j%200000 == 0) cout << j << ", " << (double)j/num*100 << "[%] finsihed" << endl;
+      for(int k=0; k<2; k++) { // region
+        ran_D = gRandom->Gaus(data[k]->GetBinContent(i), data[k]->GetBinError(i));
+        ran_L = gRandom->Gaus(LB[k]->GetBinContent(i), LB[k]->GetBinError(i));
+        ran_T = gRandom->Gaus(TB[k]->GetBinContent(i), TB[k]->GetBinError(i));
+        D[k][0] = ran_L;
+        D[k][1] = ran_T;
+        L[k][0] = ran_D;
+        L[k][1] = ran_T;
+        T[k][0] = ran_L;
+        T[k][1] = ran_D;
+      }
+      LError[i-1]->Fill(nom_L-(L.Determinant()/D.Determinant()));
+      TError[i-1]->Fill(nom_T-(T.Determinant()/D.Determinant()));
+      err_L.push_back(nom_L-L.Determinant()/D.Determinant());
+      err_T.push_back(nom_T-T.Determinant()/D.Determinant());
+    }
+
+    temp = 0;
+    bin_up = 0; bin_dw = 0;
+    for(int bin=LError[i-1]->GetMaximumBin();bin<=LError[i-1]->GetNbinsX();bin++) {
+      temp += LError[i-1]->GetBinContent(bin);
+      temp += LError[i-1]->GetBinContent(2*LError[i-1]->GetMaximumBin()-bin-1);
+      if(temp/num > 0.68) continue;
+      else {
+        bin_up = LError[i-1]->GetBinCenter(bin); 
+        bin_dw = LError[i-1]->GetBinCenter(2.*LError[i-1]->GetMaximumBin()-bin-1);
+      }
+    }
+    cout << "L : " << bin_up << ", " << bin_dw << endl;
+    Err_Up_L->SetBinContent(i, bin_up);
+    Err_Up_L->SetBinError(i, 0);
+    Err_Dw_L->SetBinContent(i, bin_dw);
+    Err_Dw_L->SetBinError(i, 0);
+    temp1.push_back(bin_up);
+    temp3.push_back(bin_dw);
+
+    if(TString(sample).Contains("MRR2")) {
+      LError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      TError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      if(i==1) {
+        LError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
+      }
+      else if (i > 2) {
+        LError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+        TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      }
+    } else {
+      LError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+    }
+
+    c1->cd();
+    LError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
+    LError[i-1]->Draw();
+    auto leg = new TLegend(0.60,0.80,0.9,0.9);
+    if(TString(sample).Contains("2016")) name1 = "2016";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else name1 = "2018";
+    if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
+    else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
+    leg->SetHeader(name1+", CF_{Lep+MET, Wjets}"+name2+" "+to_string(i)+" bin");
+    leg->Draw();
+
+    line = new TLine(bin_up,0,bin_up,1.05*LError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    line = new TLine(bin_dw,0,bin_dw,1.05*LError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    c1->Write();
+
+    temp = 0;
+    bin_up = 0; bin_dw = 0;
+    for(int bin=TError[i-1]->GetMaximumBin();bin<=TError[i-1]->GetNbinsX();bin++) {
+      temp += TError[i-1]->GetBinContent(bin);
+      temp += TError[i-1]->GetBinContent(2*TError[i-1]->GetMaximumBin()-bin-1);
+      if(temp/num > 0.68) continue;
+      else {
+        bin_up = TError[i-1]->GetBinCenter(bin); 
+        bin_dw = TError[i-1]->GetBinCenter(2.*TError[i-1]->GetMaximumBin()-bin-1);
+      }
+    }
+    cout << "T : " << bin_up << ", " << bin_dw << endl;
+    Err_Up_T->SetBinContent(i, bin_up);
+    Err_Up_T->SetBinError(i, 0);
+    Err_Dw_T->SetBinContent(i, bin_dw);
+    Err_Dw_T->SetBinError(i, 0);
+    temp2.push_back(bin_up);
+    temp4.push_back(bin_dw);
+
+    c2->cd();
+    TError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
+    TError[i-1]->Draw();
+    leg = new TLegend(0.60,0.80,0.9,0.9);
+    if(TString(sample).Contains("2016")) name1 = "2016";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else name1 = "2018";
+    if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
+    else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
+    leg->SetHeader(name1+", CF_{Lep+MET, Top}"+name2+" "+to_string(i)+" bin");
+    leg->Draw();
+
+    line = new TLine(bin_up,0,bin_up,1.05*TError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    line = new TLine(bin_dw,0,bin_dw,1.05*TError[i-1]->GetMaximum());
+    line->SetLineColor(kRed);
+    line->Draw("same");
+    c2->Write();
+  }
+  output->Close();
+  return make_tuple(temp1, temp2, temp3, temp4);
+}
+
+tuple<TGraphAsymmErrors*, TGraphAsymmErrors*, TGraphAsymmErrors*> Correction(TString period, TString region, TString obj, TString sample){
+  cout << "period : " << period << ", region : " << region << ", obj : " << obj << endl;
   delete gROOT->FindObject("c1");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/Users/huhchanggi/temp/200423/";
-  TFile* file0 = TFile::Open(dir+"run_2020_04_28.root");
+  TString dir = "/Users/huhchanggi/temp/200917/";
+  TFile* file0 = TFile::Open(dir+sample);
 
   TString histname[3][9];
   file0->cd("Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins");
-  histname[0][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[0][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_JetHTMET_"+period+"_CR_QCD17_"+region;
-  histname[1][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[1][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_JetHTMET_"+period+"_CR_Top17_"+region;
-  histname[2][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_JetHTMET_"+period+"_CR_W17_"+region;
-  histname[2][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_JetHTMET_"+period+"_CR_W17_"+region;
+  histname[0][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_QCD17_"+region;
+  histname[0][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_QCD17_"+region;
+  histname[0][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_QCD17_"+region;
+  histname[0][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_QCD17_"+region;
+  histname[0][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_QCD17_"+region;
+  histname[0][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_QCD17_"+region;
+  histname[0][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_QCD17_"+region;
+  histname[0][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_QCD17_"+region;
+  histname[0][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_QCD17_"+region;
+  histname[1][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_Top17_"+region;
+  histname[1][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_Top17_"+region;
+  histname[1][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_Top17_"+region;
+  histname[1][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_Top17_"+region;
+  histname[1][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_Top17_"+region;
+  histname[1][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_Top17_"+region;
+  histname[1][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_Top17_"+region;
+  histname[1][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_Top17_"+region;
+  histname[1][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_Top17_"+region;
+  histname[2][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_W17_"+region;
+  histname[2][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_W17_"+region;
+  histname[2][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_W17_"+region;
+  histname[2][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_W17_"+region;
+  histname[2][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_W17_"+region;
+  histname[2][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_W17_"+region;
+  histname[2][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_W17_"+region;
+  histname[2][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_W17_"+region;
+  histname[2][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_W17_"+region;
 
   TH2D* bkg2D[3][9];
   TH1D* bkg[3][9];
+  TH1D* bkg_up[3][9];
+  TH1D* bkg_dw[3][9];
   TH1D* top[3];
   TH1D* CF[3];
+  TH1D* CF_up[3];
+  TH1D* CF_dw[3];
 
   for(int i=0; i<3; i++){
     for(int j=0; j<9; j++) bkg2D[i][j] = (TH2D*)file0->Get(histname[i][j]);
@@ -54,7 +485,10 @@ tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString ob
     for(int j=0; j<9; j++) {
       name = "bkg_"+to_string(i)+to_string(j);
       bkg[i][j] = new TH1D(name.c_str(), "", binsize, bin);
-      //bkg[i][j] = (TH1D*)bkg2D[0][0]->ProjectionX("temp");
+      name = "bkg_up_"+to_string(i)+to_string(j);
+      bkg_up[i][j] = new TH1D(name.c_str(), "", binsize, bin);
+      name = "bkg_dw_"+to_string(i)+to_string(j);
+      bkg_dw[i][j] = new TH1D(name.c_str(), "", binsize, bin);
       for(int k=1;k<=bkg2D[0][0]->GetNbinsX();k++) {
         if(bkg2D[i][j] == NULL) {
           bkg[i][j]->SetBinContent(k, 0);
@@ -63,13 +497,23 @@ tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString ob
         else {
           bkg[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1));
           bkg[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
+          bkg_up[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1)+bkg2D[i][j]->GetBinError(k,1));
+          bkg_up[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
+          bkg_dw[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1)-bkg2D[i][j]->GetBinError(k,1));
+          bkg_dw[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
         }
       }
     }
     bkg[i][2]->Add(bkg[i][3]);
+    bkg_up[i][2]->Add(bkg_up[i][3]);
+    bkg_dw[i][2]->Add(bkg_dw[i][3]);
     CF[i] = (TH1D*)bkg[i][0]->Clone();
+    CF_up[i] = (TH1D*)bkg_up[i][0]->Clone();
+    CF_dw[i] = (TH1D*)bkg_dw[i][0]->Clone();
     for(int j=5; j<9; j++){
       CF[i]->Add(bkg[i][j], -1);
+      CF_up[i]->Add(bkg_up[i][j], -1);
+      CF_dw[i]->Add(bkg_dw[i][j], -1);
     }
   }
 
@@ -77,15 +521,50 @@ tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString ob
   TMatrix Q(3,3);
   TMatrix T(3,3);
   TMatrix W(3,3);
-  string name_Q = "CF_Q_"+(string)period+"_"+(string)region;
-  string name_T = "CF_T_"+(string)period+"_"+(string)region;
-  string name_W = "CF_W_"+(string)period+"_"+(string)region;
-  TH1D* CF_Q = new TH1D(name_Q.c_str(), "", binsize,bin);
-  TH1D* CF_T = new TH1D(name_T.c_str(), "", binsize,bin);
-  TH1D* CF_W = new TH1D(name_W.c_str(), "", binsize,bin);
 
-  for(int i=1; i<= CF_Q->GetNbinsX();i++){
-    for(int j=0; j<3;j++){
+  double cf_Q[binsize];
+  double cf_Q_up[binsize];
+  double cf_Q_dw[binsize];
+  double cf_T[binsize];
+  double cf_T_up[binsize];
+  double cf_T_dw[binsize];
+  double cf_W[binsize];
+  double cf_W_up[binsize];
+  double cf_W_dw[binsize];
+  double binerr_x[binsize];
+  double binx[binsize];
+
+  int flag = 0;
+  double qbinerr_x[binsize-1];
+  double qbinx[binsize-1];
+
+  tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<double>, vector<double>> Err_CFs;
+  TH1D* temp;
+  vector<double> temp1;
+  vector<double> temp2;
+  vector<double> temp3;
+  vector<double> temp4;
+  vector<double> temp5;
+  vector<double> temp6;
+
+  Err_CFs = CalcErrors(CF, bkg, (string)obj+(string)period+(string)region);
+  temp1 = get<0>(Err_CFs);
+  temp2 = get<1>(Err_CFs);
+  temp3 = get<2>(Err_CFs);
+  temp4 = get<3>(Err_CFs);
+  temp5 = get<4>(Err_CFs);
+  temp6 = get<5>(Err_CFs);
+
+  for(int i=1; i<= binsize;i++){
+
+    cf_Q_up[i-1] = abs(temp1.at(i-1));
+    cf_T_up[i-1] = abs(temp2.at(i-1));
+    cf_W_up[i-1] = abs(temp3.at(i-1));
+    cf_Q_dw[i-1] = abs(temp4.at(i-1));
+    cf_T_dw[i-1] = abs(temp5.at(i-1));
+    cf_W_dw[i-1] = abs(temp6.at(i-1));
+
+    for(int j=0; j<3;j++) {
       D[j][0] = bkg[j][1]->GetBinContent(i);
       D[j][1] = bkg[j][2]->GetBinContent(i);
       D[j][2] = bkg[j][4]->GetBinContent(i);
@@ -98,30 +577,78 @@ tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString ob
       W[j][0] = bkg[j][1]->GetBinContent(i);
       W[j][1] = bkg[j][2]->GetBinContent(i);
       W[j][2] = CF[j]->GetBinContent(i);
+      binerr_x[i-1] = CF[j]->GetXaxis()->GetBinWidth(i)/2;
+      binx[i-1] = CF[j]->GetXaxis()->GetBinCenter(i);
     }
-    CF_Q->SetBinContent(i, Q.Determinant()/D.Determinant());
-    CF_T->SetBinContent(i, T.Determinant()/D.Determinant());
-    CF_W->SetBinContent(i, W.Determinant()/D.Determinant());
+
+    cf_Q[i-1] = Q.Determinant()/D.Determinant();
+    cf_T[i-1] = T.Determinant()/D.Determinant();
+    cf_W[i-1] = W.Determinant()/D.Determinant();
+
+    if(cf_Q[i-1] + temp4.at(i-1) < 0) cf_Q_dw[i-1] = cf_Q[i-1];
+    if(cf_T[i-1] + temp5.at(i-1) < 0) cf_T_dw[i-1] = cf_T[i-1];
+    if(cf_W[i-1] + temp6.at(i-1) < 0) cf_W_dw[i-1] = cf_W[i-1];
+
+
+    if(cf_Q[i-1] < 0) {
+      cout << "CF is smaller than 0" << endl;
+      for(int j=0; j<3;j++) {
+        D[j][0] = bkg[j][1]->GetBinContent(i) + bkg[j][1]->GetBinContent(i-1);
+        D[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+        D[j][2] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+        Q[j][0] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+        Q[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+        Q[j][2] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+        T[j][0] = bkg[j][1]->GetBinContent(i) + bkg[j][1]->GetBinContent(i-1);
+        T[j][1] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+        T[j][2] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+        W[j][0] = bkg[j][1]->GetBinContent(i) + bkg[j][1]->GetBinContent(i-1);
+        W[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+        W[j][2] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+      }
+      qbinerr_x[0] = binerr_x[0];
+      qbinerr_x[1] = binerr_x[1];
+      qbinerr_x[2] = binerr_x[2];
+      qbinerr_x[3] = binerr_x[3];
+      qbinx[0] = binx[0];
+      qbinx[1] = binx[1];
+      qbinx[2] = binx[2];
+      qbinx[3] = binx[3];
+      qbinerr_x[4] = (CF[0]->GetXaxis()->GetBinWidth(5) + CF[0]->GetXaxis()->GetBinWidth(6))/2.;
+      qbinx[4] = (CF[0]->GetXaxis()->GetBinCenter(5) - CF[0]->GetXaxis()->GetBinWidth(5)/2 + CF[0]->GetXaxis()->GetBinCenter(6) + CF[0]->GetXaxis()->GetBinWidth(6)/2 )/2.;
+      cf_Q[4] = Q.Determinant()/D.Determinant();
+      cf_Q_dw[4] = abs(temp4.at(4));
+      flag = 1;
+    }
   }
+  auto CF_Q = new TGraphAsymmErrors(binsize, binx, cf_Q, binerr_x, binerr_x, cf_Q_dw, cf_Q_up);
+  if(flag == 1) CF_Q = new TGraphAsymmErrors(binsize-1, qbinx, cf_Q, qbinerr_x, qbinerr_x, cf_Q_dw, cf_Q_up);
+  auto CF_T = new TGraphAsymmErrors(binsize, binx, cf_T, binerr_x, binerr_x, cf_T_dw, cf_T_up);
+  auto CF_W = new TGraphAsymmErrors(binsize, binx, cf_W, binerr_x, binerr_x, cf_W_dw, cf_W_up);
+
+  string name_Q = "CF_Q_"+(string)period+"_"+(string)region;
+  string name_T = "CF_T_"+(string)period+"_"+(string)region;
+  string name_W = "CF_W_"+(string)period+"_"+(string)region;
+  CF_Q->SetName(name_Q.c_str());
+  CF_T->SetName(name_T.c_str());
+  CF_W->SetName(name_W.c_str());
+
 
   TCanvas* c1 = new TCanvas("c1","",700,700);
-  
+
   c1->SetGridx();
   c1->SetGridy();
-  CF_Q->SetMaximum(2);
-  CF_Q->SetMinimum(0);
-  CF_Q->GetYaxis()->SetTitle("Correction Factor");
-  CF_Q->GetXaxis()->SetTitle("M_{R} #times R^{2} [GeV]");
-  if(TString(obj).Contains("NJet")) CF_Q->GetXaxis()->SetTitle("N_{Jets}");
-  CF_Q->GetYaxis()->SetTitleOffset(0.9);
+  c1->GetFrame()->SetBorderSize(12);
   CF_Q->SetMarkerStyle(21);
   CF_T->SetMarkerStyle(21);
   CF_W->SetMarkerStyle(21);
   CF_T->SetMarkerColor(kRed);
   CF_W->SetMarkerColor(kBlue);
-  CF_Q->Draw("P");
-  CF_T->Draw("Psame");
-  CF_W->Draw("Psame");
+  TMultiGraph *mg = new TMultiGraph();
+  mg->Add(CF_Q);
+  mg->Add(CF_T);
+  mg->Add(CF_W);
+  mg->Draw("AP");
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
   if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet final state");
@@ -132,60 +659,281 @@ tuple<TH1D*, TH1D*, TH1D*> Correction(TString period, TString region, TString ob
   leg->AddEntry(CF_W,  "W(#rightarrowl#nu)+jet CF", "p");
   leg->Draw();
 
-
-  float xmin = CF_Q->GetXaxis()->GetBinLowEdge(CF_Q->GetXaxis()->GetFirst());
-  float xmax = CF_Q->GetXaxis()->GetBinUpEdge( CF_Q->GetXaxis()->GetLast());
- 
-  string text;
-  if(TString(region).Contains("1Boost"))      text = "CMS #scale[0.7]{#font[52]{Work in progress 2016}}";
-  else if(TString(region).Contains("2Boost")) text = "CMS #scale[0.7]{#font[52]{Work in progress 2017}}";
-  else                                        text = "CMS #scale[0.7]{#font[52]{Work in progress 2018}}";
-  TLatex* cms_lat = new TLatex(xmin, 2.05, text.c_str());
-  cms_lat->SetTextSize(0.04);
-  cms_lat->SetLineWidth(2);
-  cms_lat->Draw();
-  if(TString(region).Contains("1Boost"))      text = "#scale[0.7]{35.9 fb^{-1} (13 TeV)}";
-  else if(TString(region).Contains("2Boost")) text = "#scale[0.7]{41.5 fb^{-1} (13 TeV)}";
-  else                                        text = "#scale[0.7]{59.7 fb^{-1} (13 TeV)}";
-  TLatex* era_lat = new TLatex(xmax,2.1, text.c_str());
-  era_lat->SetTextAlign(32);
-  era_lat->SetTextSize(0.03);
-  era_lat->SetTextFont(42);
-  era_lat->SetLineWidth(2);
-  era_lat->Draw();
-
   c1->SaveAs("plot/"+period+obj+"CF_"+region+".png");
   return make_tuple(CF_Q, CF_T, CF_W);
 }
 
-tuple<TH1D*, TH1D*> LCorrection(TString period, TString region, TString obj){
+tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCorrection(TString period, TString region, TString obj, TString sample){
   delete gROOT->FindObject("c1");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/Users/huhchanggi/temp/200423/";
-  TFile* file0 = TFile::Open(dir+"run_2020_04_28.root");
+  TString dir = "/Users/huhchanggi/temp/200917/";
+  TFile* file0 = TFile::Open(dir+sample);
 
   TString histname[2][9];
   file0->cd("Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins");
-  histname[0][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[0][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_JetHTMET_"+period+"_CR_L17_"+region;
-  histname[1][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_JetHTMET_"+period+"_CR_LTop17_"+region;
-  histname[1][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_JetHTMET_"+period+"_CR_LTop17_"+region;
+  histname[0][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_L17_"+region;
+  histname[0][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_L17_"+region;
+  histname[0][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_L17_"+region;
+  histname[0][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_L17_"+region;
+  histname[0][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_L17_"+region;
+  histname[0][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_L17_"+region;
+  histname[0][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_L17_"+region;
+  histname[0][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_L17_"+region;
+  histname[0][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_L17_"+region;
+  histname[1][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_LTop17_"+region;
+  histname[1][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_LTop17_"+region;
+  histname[1][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_LTop17_"+region;
+  histname[1][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_LTop17_"+region;
+  histname[1][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_LTop17_"+region;
+  histname[1][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_LTop17_"+region;
+  histname[1][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_LTop17_"+region;
+  histname[1][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_LTop17_"+region;
+  histname[1][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_LTop17_"+region;
+
+  TH2D* bkg2D[2][9];
+  TH1D* bkg[2][9];
+  TH1D* bkg_up[2][9];
+  TH1D* bkg_dw[2][9];
+  TH1D* top[2];
+  TH1D* CF[2];
+  TH1D* CF_up[3];
+  TH1D* CF_dw[3];
+
+  for(int i=0; i<2; i++){
+    for(int j=0; j<9; j++) bkg2D[i][j] = (TH2D*)file0->Get(histname[i][j]);
+  }
+  int binsize = bkg2D[0][0]->GetNbinsX();
+  double bin[binsize+1];
+  string name;
+
+  for(int i=1;i<=bkg2D[0][0]->GetNbinsX()+1;i++) bin[i-1] = bkg2D[0][0]->GetXaxis()->GetBinLowEdge(i);
+
+  for(int i=0; i<2; i++) {
+    for(int j=0; j<9; j++) {
+      name = "bkg_"+to_string(i)+to_string(j);
+      bkg[i][j] = new TH1D(name.c_str(), "", binsize, bin);
+      name = "bkg_up_"+to_string(i)+to_string(j);
+      bkg_up[i][j] = new TH1D(name.c_str(), "", binsize, bin);
+      name = "bkg_dw_"+to_string(i)+to_string(j);
+      bkg_dw[i][j] = new TH1D(name.c_str(), "", binsize, bin);
+      for(int k=1;k<=bkg2D[0][0]->GetNbinsX();k++) {
+        if(bkg2D[i][j] == NULL) {
+          bkg[i][j]->SetBinContent(k, 0);
+          bkg[i][j]->SetBinError(k, 0);
+        }
+        else {
+          bkg[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1));
+          bkg[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
+          bkg_up[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1)+bkg2D[i][j]->GetBinError(k,1));
+          bkg_up[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
+          bkg_dw[i][j]->SetBinContent(k, bkg2D[i][j]->GetBinContent(k,1)-bkg2D[i][j]->GetBinError(k,1));
+          bkg_dw[i][j]->SetBinError(k, bkg2D[i][j]->GetBinError(k,1));
+        }
+      }
+    }
+    bkg[i][2]->Add(bkg[i][3]);
+    bkg_up[i][2]->Add(bkg_up[i][3]);
+    bkg_dw[i][2]->Add(bkg_dw[i][3]);
+    CF[i] = (TH1D*)bkg[i][0]->Clone();
+    CF[i]->Add(bkg[i][1], -1);
+    CF_up[i] = (TH1D*)bkg_up[i][0]->Clone();
+    CF_up[i]->Add(bkg_up[i][1], -1);
+    CF_dw[i] = (TH1D*)bkg_dw[i][0]->Clone();
+    CF_dw[i]->Add(bkg_dw[i][1], -1);
+    for(int j=5; j<9; j++){
+      CF[i]->Add(bkg[i][j], -1);
+      CF_up[i]->Add(bkg_up[i][j], -1);
+      CF_dw[i]->Add(bkg_dw[i][j], -1);
+    }
+  }
+
+  TMatrix D(2,2);
+  TMatrix L(2,2);
+  TMatrix T(2,2);
+  TMatrix D_up(2,2);
+  TMatrix L_up(2,2);
+  TMatrix T_up(2,2);
+  TMatrix D_dw(2,2);
+  TMatrix L_dw(2,2);
+  TMatrix T_dw(2,2);
+
+  double cf_L[binsize];
+  double cf_L_up[binsize];
+  double cf_L_dw[binsize];
+  double cf_T[binsize];
+  double cf_T_up[binsize];
+  double cf_T_dw[binsize];
+  double cf_t[binsize-1];
+  double cf_t_up[binsize-1];
+  double cf_t_dw[binsize-1];
+  double binerr_x[binsize];
+  double binx[binsize];
+
+  int flag = 0;
+  double tbinerr_x[binsize-1];
+  double tbinx[binsize-1];
+
+
+  tuple<vector<double>, vector<double>, vector<double>, vector<double>> Err_CFs;
+  TH1D* temp;
+  vector<double> temp1;
+  vector<double> temp2;
+  vector<double> temp3;
+  vector<double> temp4;
+
+  Err_CFs = CalcLErrors(CF, bkg, (string)obj+(string)period+(string)region);
+  temp1 = get<0>(Err_CFs);
+  temp2 = get<1>(Err_CFs);
+  temp3 = get<2>(Err_CFs);
+  temp4 = get<3>(Err_CFs);
+
+  for(int i=1; i<= binsize;i++){
+    cf_L_up[i-1] = abs(temp1.at(i-1));
+    cf_T_up[i-1] = abs(temp2.at(i-1));
+    cf_L_dw[i-1] = abs(temp3.at(i-1));
+    cf_T_dw[i-1] = abs(temp4.at(i-1));
+
+    for(int j=0; j<2;j++){
+      D[j][0] = bkg[j][4]->GetBinContent(i);
+      D[j][1] = bkg[j][2]->GetBinContent(i);
+      L[j][0] = CF[j]->GetBinContent(i);
+      L[j][1] = bkg[j][2]->GetBinContent(i);
+      T[j][0] = bkg[j][4]->GetBinContent(i);
+      T[j][1] = CF[j]->GetBinContent(i);
+      binerr_x[i-1] = CF[j]->GetXaxis()->GetBinWidth(i)/2;
+      binx[i-1] = CF[j]->GetXaxis()->GetBinCenter(i);
+    }
+    cf_L[i-1] = L.Determinant()/D.Determinant();
+    cf_T[i-1] = T.Determinant()/D.Determinant();
+    if(flag == 2 && i > 2) {
+      cf_t[i-2] = T.Determinant()/D.Determinant();
+      cf_t_up[i-2] = abs(temp2.at(i-1));
+      cf_t_dw[i-2] = abs(temp2.at(i-1));
+    }
+
+    if(cf_L[i-1] + temp3.at(i-1) < 0) cf_L_dw[i-1] = cf_L[i-1];
+    if(cf_T[i-1] + temp4.at(i-1) < 0) cf_T_dw[i-1] = cf_T[i-1];
+
+    if(cf_T[i-1] < 0) {
+      cout << "CF is smaller than 0" << endl;
+      if(obj == "NJet") {
+        for(int j=0; j<2;j++) {
+          D[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i+1);
+          D[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i+1);
+          L[j][0] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i+1);
+          L[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i+1);
+          T[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i+1);
+          T[j][1] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i+1);
+        }
+        tbinerr_x[0] = (CF[0]->GetXaxis()->GetBinWidth(1) + CF[0]->GetXaxis()->GetBinWidth(2))/2.;
+        tbinx[0] = (CF[0]->GetXaxis()->GetBinCenter(1) - CF[0]->GetXaxis()->GetBinWidth(1)/2 + CF[0]->GetXaxis()->GetBinCenter(2) + CF[0]->GetXaxis()->GetBinWidth(2)/2 )/2.;
+        tbinerr_x[1] = CF[0]->GetXaxis()->GetBinWidth(3)/2;
+        tbinerr_x[2] = CF[0]->GetXaxis()->GetBinWidth(4)/2;
+        tbinerr_x[3] = CF[0]->GetXaxis()->GetBinWidth(5)/2;
+        tbinx[1] = CF[0]->GetXaxis()->GetBinCenter(3);
+        tbinx[2] = CF[0]->GetXaxis()->GetBinCenter(4);
+        tbinx[3] = CF[0]->GetXaxis()->GetBinCenter(5);
+        cf_t[i-1] = T.Determinant()/D.Determinant();
+        cf_t_up[i-1] = abs(temp2.at(1));
+        cf_t_dw[i-1] = abs(temp4.at(1));
+        flag = 2;
+      } else {
+        for(int j=0; j<2;j++) {
+          D[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+          D[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+          L[j][0] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+          L[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+          T[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+          T[j][1] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+        }
+        tbinerr_x[0] = binerr_x[0];
+        tbinerr_x[1] = binerr_x[1];
+        tbinerr_x[2] = binerr_x[2];
+        tbinerr_x[3] = binerr_x[3];
+        tbinx[0] = binx[0];
+        tbinx[1] = binx[1];
+        tbinx[2] = binx[2];
+        tbinx[3] = binx[3];
+        tbinerr_x[4] = (CF[0]->GetXaxis()->GetBinWidth(i) + CF[0]->GetXaxis()->GetBinWidth(i-1))/2.;
+        tbinx[4] = (CF[0]->GetXaxis()->GetBinCenter(i-1) - CF[0]->GetXaxis()->GetBinWidth(i-1)/2 + CF[0]->GetXaxis()->GetBinCenter(i) + CF[0]->GetXaxis()->GetBinWidth(i)/2 )/2.;
+        cf_T[i-2] = T.Determinant()/D.Determinant();
+        flag = 1;
+      }
+    }
+  }
+  //for(int i=0;i<binsize-1;i++) cout << i << ", " << tbinx[i] << ", " << tbinerr_x[i] << ", " << cf_t[i] << endl;
+
+  auto CF_L = new TGraphAsymmErrors(binsize, binx, cf_L, binerr_x, binerr_x, cf_L_dw, cf_L_up);
+  auto CF_T = new TGraphAsymmErrors(binsize, binx, cf_T, binerr_x, binerr_x, cf_T_dw, cf_T_up);
+  if(flag == 1) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_T, tbinerr_x, tbinerr_x, cf_T_dw, cf_T_up);
+  if(flag == 2) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_t, tbinerr_x, tbinerr_x, cf_t_dw, cf_T_up);
+
+  string name_L = "CF_L_"+(string)period+"_"+(string)region;
+  string name_T = "CF_LT_"+(string)period+"_"+(string)region;
+  CF_L->SetName(name_L.c_str());
+  CF_T->SetName(name_T.c_str());
+
+  TCanvas* c1 = new TCanvas("c1","",700,700);
+
+  c1->SetGridx();
+  c1->SetGridy();
+  CF_L->SetMaximum(2);
+  CF_L->SetMinimum(0);
+  CF_L->GetYaxis()->SetTitle("Correction Factor");
+  CF_L->GetXaxis()->SetTitle("M_{R} #times R^{2} [GeV]");
+  if(TString(obj).Contains("NJet")) CF_L->GetXaxis()->SetTitle("N_{Jets}");
+  CF_L->GetYaxis()->SetTitleOffset(0.9);
+  CF_L->SetMarkerStyle(21);
+  CF_T->SetMarkerStyle(21);
+  CF_T->SetMarkerColor(kRed);
+  TMultiGraph *mg = new TMultiGraph();
+  mg->Add(CF_L);
+  mg->Add(CF_T);
+  mg->Draw("AP");
+
+
+  auto leg = new TLegend(0.45,0.77,0.9,0.9);
+  if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet with Lep+MET final state");
+  else if(TString(region).Contains("2Boost")) leg->SetHeader("#geq 2 boost jet with Lep+MET final state");
+  else leg->SetHeader("boost jet with Lep+MET final state");
+  leg->AddEntry(CF_L,  "W(#rightarrowl#nu)+jet CF", "p");
+  leg->AddEntry(CF_T,  "Top(TT+ST) CF", "p");
+  leg->Draw();
+
+  c1->SaveAs("plot/"+period+obj+"_L_CF_"+region+".png");
+  return make_tuple(CF_L, CF_T);
+}
+
+tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, TString obj, TString sample){
+  delete gROOT->FindObject("c1");
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  TH1::SetDefaultSumw2();
+  TString dir = "/Users/huhchanggi/temp/200917/";
+  TFile* file0 = TFile::Open(dir+sample);
+
+  TString histname[2][9];
+  file0->cd("Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins");
+  histname[0][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[0][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_NonIso_0b_RMTdPhi";
+  histname[1][0] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Data_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][1] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multijet_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][2] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Top_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][3] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/TT_powheg_pythia8_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][4] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/WToLNu_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][5] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/ZToNuNu_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][6] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/Multiboson_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][7] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/GJets_"+period+"_CR_NonIso_b_RMTdPhi";
+  histname[1][8] = "/Counts_vs_"+obj+"Bins/Syst_vs_"+obj+"Bins/DYToLL_"+period+"_CR_NonIso_b_RMTdPhi";
 
   TH2D* bkg2D[2][9];
   TH1D* bkg[2][9];
@@ -218,144 +966,247 @@ tuple<TH1D*, TH1D*> LCorrection(TString period, TString region, TString obj){
     }
     bkg[i][2]->Add(bkg[i][3]);
     CF[i] = (TH1D*)bkg[i][0]->Clone();
+    CF[i]->Add(bkg[i][1], -1);
     for(int j=5; j<9; j++){
       CF[i]->Add(bkg[i][j], -1);
     }
   }
 
   TMatrix D(2,2);
-  TMatrix L(2,2);
+  TMatrix W(2,2);
   TMatrix T(2,2);
-  string name_L = "CF_L_"+(string)period+"_"+(string)region;
-  string name_T = "CF_T_"+(string)period+"_"+(string)region;
-  TH1D* CF_L = new TH1D(name_L.c_str(), "", binsize,bin);
-  TH1D* CF_T = new TH1D(name_T.c_str(), "", binsize,bin);
+  TMatrix D_up(2,2);
+  TMatrix W_up(2,2);
+  TMatrix T_up(2,2);
+  TMatrix D_dw(2,2);
+  TMatrix W_dw(2,2);
+  TMatrix T_dw(2,2);
 
-  for(int i=1; i<= CF_L->GetNbinsX();i++){
+  double cf_W[binsize];
+  double cf_W_up[binsize];
+  double cf_W_dw[binsize];
+  double cf_T[binsize];
+  double cf_T_up[binsize];
+  double cf_T_dw[binsize];
+  double cf_t[binsize-1];
+  double cf_t_up[binsize-1];
+  double cf_t_dw[binsize-1];
+  double binerr_x[binsize];
+  double binx[binsize];
+
+  int flag = 0;
+  double tbinerr_x[binsize-1];
+  double tbinx[binsize-1];
+
+
+  tuple<vector<double>, vector<double>, vector<double>, vector<double>> Err_CFs;
+  TH1D* temp;
+  vector<double> temp1;
+  vector<double> temp2;
+  vector<double> temp3;
+  vector<double> temp4;
+
+  Err_CFs = CalcLErrors(CF, bkg, (string)obj+(string)period);
+  temp1 = get<0>(Err_CFs);
+  temp2 = get<1>(Err_CFs);
+  temp3 = get<2>(Err_CFs);
+  temp4 = get<3>(Err_CFs);
+
+  for(int i=1; i<= binsize;i++){
+    cf_W_up[i-1] = abs(temp1.at(i-1));
+    cf_T_up[i-1] = abs(temp2.at(i-1));
+    cf_W_dw[i-1] = abs(temp3.at(i-1));
+    cf_T_dw[i-1] = abs(temp4.at(i-1));
+
     for(int j=0; j<2;j++){
       D[j][0] = bkg[j][4]->GetBinContent(i);
       D[j][1] = bkg[j][2]->GetBinContent(i);
-      L[j][0] = CF[j]->GetBinContent(i);
-      L[j][1] = bkg[j][2]->GetBinContent(i);
+      W[j][0] = CF[j]->GetBinContent(i);
+      W[j][1] = bkg[j][2]->GetBinContent(i);
       T[j][0] = bkg[j][4]->GetBinContent(i);
       T[j][1] = CF[j]->GetBinContent(i);
+      binerr_x[i-1] = CF[j]->GetXaxis()->GetBinWidth(i)/2;
+      binx[i-1] = CF[j]->GetXaxis()->GetBinCenter(i);
     }
-    CF_L->SetBinContent(i, L.Determinant()/D.Determinant());
-    CF_T->SetBinContent(i, T.Determinant()/D.Determinant());
+    cf_W[i-1] = W.Determinant()/D.Determinant();
+    cf_T[i-1] = T.Determinant()/D.Determinant();
+    if(flag == 2 && i > 2) {
+      cf_t[i-2] = T.Determinant()/D.Determinant();
+      cf_t_up[i-2] = abs(temp2.at(i-1));
+      cf_t_dw[i-2] = abs(temp2.at(i-1));
+    }
+
+    if(cf_W[i-1] + temp3.at(i-1) < 0) cf_W_dw[i-1] = cf_W[i-1];
+    if(cf_T[i-1] + temp4.at(i-1) < 0) cf_T_dw[i-1] = cf_T[i-1];
+
+    if(cf_T[i-1] < 0) {
+      cout << "CF is smaller than 0" << endl;
+      if(obj == "NJet") {
+        for(int j=0; j<2;j++) {
+          D[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i+1);
+          D[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i+1);
+          W[j][0] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i+1);
+          W[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i+1);
+          T[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i+1);
+          T[j][1] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i+1);
+        }
+        tbinerr_x[0] = (CF[0]->GetXaxis()->GetBinWidth(1) + CF[0]->GetXaxis()->GetBinWidth(2))/2.;
+        tbinx[0] = (CF[0]->GetXaxis()->GetBinCenter(1) - CF[0]->GetXaxis()->GetBinWidth(1)/2 + CF[0]->GetXaxis()->GetBinCenter(2) + CF[0]->GetXaxis()->GetBinWidth(2)/2 )/2.;
+        tbinerr_x[1] = CF[0]->GetXaxis()->GetBinWidth(3)/2;
+        tbinerr_x[2] = CF[0]->GetXaxis()->GetBinWidth(4)/2;
+        tbinerr_x[3] = CF[0]->GetXaxis()->GetBinWidth(5)/2;
+        tbinx[1] = CF[0]->GetXaxis()->GetBinCenter(3);
+        tbinx[2] = CF[0]->GetXaxis()->GetBinCenter(4);
+        tbinx[3] = CF[0]->GetXaxis()->GetBinCenter(5);
+        cf_t[i-1] = T.Determinant()/D.Determinant();
+        cf_t_up[i-1] = abs(temp2.at(1));
+        cf_t_dw[i-1] = abs(temp4.at(1));
+        flag = 2;
+      } else {
+        for(int j=0; j<2;j++) {
+          D[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+          D[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+          W[j][0] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+          W[j][1] = bkg[j][2]->GetBinContent(i) + bkg[j][2]->GetBinContent(i-1);
+          T[j][0] = bkg[j][4]->GetBinContent(i) + bkg[j][4]->GetBinContent(i-1);
+          T[j][1] = CF[j]->GetBinContent(i) + CF[j]->GetBinContent(i-1);
+        }
+        tbinerr_x[0] = binerr_x[0];
+        tbinerr_x[1] = binerr_x[1];
+        tbinerr_x[2] = binerr_x[2];
+        tbinerr_x[3] = binerr_x[3];
+        tbinx[0] = binx[0];
+        tbinx[1] = binx[1];
+        tbinx[2] = binx[2];
+        tbinx[3] = binx[3];
+        tbinerr_x[4] = (CF[0]->GetXaxis()->GetBinWidth(i) + CF[0]->GetXaxis()->GetBinWidth(i-1))/2.;
+        tbinx[4] = (CF[0]->GetXaxis()->GetBinCenter(i-1) - CF[0]->GetXaxis()->GetBinWidth(i-1)/2 + CF[0]->GetXaxis()->GetBinCenter(i) + CF[0]->GetXaxis()->GetBinWidth(i)/2 )/2.;
+        cf_T[i-2] = T.Determinant()/D.Determinant();
+        flag = 1;
+      }
+    }
   }
+  //for(int i=0;i<binsize-1;i++) cout << i << ", " << tbinx[i] << ", " << tbinerr_x[i] << ", " << cf_t[i] << endl;
+
+  auto CF_W = new TGraphAsymmErrors(binsize, binx, cf_W, binerr_x, binerr_x, cf_W_dw, cf_W_up);
+  auto CF_T = new TGraphAsymmErrors(binsize, binx, cf_T, binerr_x, binerr_x, cf_T_dw, cf_T_up);
+  if(flag == 1) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_T, tbinerr_x, tbinerr_x, cf_T_dw, cf_T_up);
+  if(flag == 2) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_t, tbinerr_x, tbinerr_x, cf_t_dw, cf_T_up);
+
+  string name_W = "CF_NonIso_W_"+(string)period;
+  string name_T = "CF_NonIso_T_"+(string)period;
+  CF_W->SetName(name_W.c_str());
+  CF_T->SetName(name_T.c_str());
 
   TCanvas* c1 = new TCanvas("c1","",700,700);
-  
+
   c1->SetGridx();
   c1->SetGridy();
-  CF_L->SetMaximum(2);
-  CF_L->SetMinimum(0);
-  CF_L->GetYaxis()->SetTitle("Correction Factor");
-  CF_L->GetXaxis()->SetTitle("M_{R} #times R^{2} [GeV]");
-  if(TString(obj).Contains("NJet")) CF_L->GetXaxis()->SetTitle("N_{Jets}");
-  CF_L->GetYaxis()->SetTitleOffset(0.9);
-  CF_L->SetMarkerStyle(21);
+  CF_W->SetMaximum(2);
+  CF_W->SetMinimum(0);
+  CF_W->GetYaxis()->SetTitle("Correction Factor");
+  CF_W->GetXaxis()->SetTitle("M_{R} #times R^{2} [GeV]");
+  if(TString(obj).Contains("NJet")) CF_W->GetXaxis()->SetTitle("N_{Jets}");
+  CF_W->GetYaxis()->SetTitleOffset(0.9);
+  CF_W->SetMarkerStyle(21);
   CF_T->SetMarkerStyle(21);
   CF_T->SetMarkerColor(kRed);
-  CF_L->Draw("P");
-  CF_T->Draw("Psame");
+  TMultiGraph *mg = new TMultiGraph();
+  mg->Add(CF_W);
+  mg->Add(CF_T);
+  mg->Draw("AP");
+
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
-  if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet with Lep+MET final state");
-  else if(TString(region).Contains("2Boost")) leg->SetHeader("#geq 2 boost jet with Lep+MET final state");
-  else leg->SetHeader("boost jet with Lep+MET final state");
-  leg->AddEntry(CF_L,  "W(#rightarrowl#nu)+jet CF", "p");
+  leg->SetHeader("Non-isolated lepton final state");
+  leg->AddEntry(CF_W,  "W(#rightarrowl#nu)+jet CF", "p");
   leg->AddEntry(CF_T,  "Top(TT+ST) CF", "p");
   leg->Draw();
 
-
-  float xmin = CF_L->GetXaxis()->GetBinLowEdge(CF_L->GetXaxis()->GetFirst());
-  float xmax = CF_L->GetXaxis()->GetBinUpEdge( CF_L->GetXaxis()->GetLast());
- 
-  string text;
-  if(TString(region).Contains("1Boost"))      text = "CMS #scale[0.7]{#font[52]{Work in progress 2016}}";
-  else if(TString(region).Contains("2Boost")) text = "CMS #scale[0.7]{#font[52]{Work in progress 2017}}";
-  else                                        text = "CMS #scale[0.7]{#font[52]{Work in progress 2018}}";
-  TLatex* cms_lat = new TLatex(xmin, 2.05, text.c_str());
-  cms_lat->SetTextSize(0.04);
-  cms_lat->SetLineWidth(2);
-  cms_lat->Draw();
-  if(TString(region).Contains("1Boost"))      text = "#scale[0.7]{35.9 fb^{-1} (13 TeV)}";
-  else if(TString(region).Contains("2Boost")) text = "#scale[0.7]{41.5 fb^{-1} (13 TeV)}";
-  else                                        text = "#scale[0.7]{59.7 fb^{-1} (13 TeV)}";
-  TLatex* era_lat = new TLatex(xmax,2.1, text.c_str());
-  era_lat->SetTextAlign(32);
-  era_lat->SetTextSize(0.03);
-  era_lat->SetTextFont(42);
-  era_lat->SetLineWidth(2);
-  era_lat->Draw();
-
-  c1->SaveAs("plot/"+period+obj+"CF_"+region+".png");
-  return make_tuple(CF_L, CF_T);
+  c1->SaveAs("plot/"+period+obj+"_NonIso_CF.png");
+  return make_tuple(CF_W, CF_T);
 }
 
 void BkgCorr_solver_NF(){
-  tuple<TH1D*, TH1D*, TH1D*> CFs;
-  tuple<TH1D*, TH1D*> LCFs;
-  TH1D* h1[5][6][2];
-  CFs = Correction("2016", "1Boost", "MRR2");
+  tuple<TGraphAsymmErrors*, TGraphAsymmErrors*, TGraphAsymmErrors*> CFs;
+  tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCFs;
+  tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCFs;
+  TGraphAsymmErrors* h1[6][6][2];
+  TFile* output;
+
+  CFs = Correction("2016", "1Boost", "MRR2", "run_2020_09_18.root");
   h1[0][0][0] = get<0>(CFs); h1[1][0][0] = get<1>(CFs); h1[2][0][0] = get<2>(CFs);
-  CFs = Correction("2016", "2Boost", "MRR2");
+  CFs = Correction("2016", "2Boost", "MRR2", "run_2020_09_18.root");
   h1[0][1][0] = get<0>(CFs); h1[1][1][0] = get<1>(CFs); h1[2][1][0] = get<2>(CFs);
-  CFs = Correction("2017", "1Boost", "MRR2");
+  CFs = Correction("2017", "1Boost", "MRR2", "run_2020_09_18.root");
   h1[0][2][0] = get<0>(CFs); h1[1][2][0] = get<1>(CFs); h1[2][2][0] = get<2>(CFs);
-  CFs = Correction("2017", "2Boost", "MRR2");
+  CFs = Correction("2017", "2Boost", "MRR2", "run_2020_09_18.root");
   h1[0][3][0] = get<0>(CFs); h1[1][3][0] = get<1>(CFs); h1[2][3][0] = get<2>(CFs);
-  CFs = Correction("2018", "1Boost", "MRR2");
+  CFs = Correction("2018", "1Boost", "MRR2", "run_2020_09_18.root");
   h1[0][4][0] = get<0>(CFs); h1[1][4][0] = get<1>(CFs); h1[2][4][0] = get<2>(CFs);
-  CFs = Correction("2018", "2Boost", "MRR2");
+  CFs = Correction("2018", "2Boost", "MRR2", "run_2020_09_18.root");
   h1[0][5][0] = get<0>(CFs); h1[1][5][0] = get<1>(CFs); h1[2][5][0] = get<2>(CFs);
 
-  LCFs = LCorrection("2016", "1Boost", "MRR2");
+  LCFs = LCorrection("2016", "1Boost", "MRR2","run_2020_09_18.root");
   h1[3][0][0] = get<0>(LCFs); h1[4][0][0] = get<1>(LCFs);
-  LCFs = LCorrection("2016", "2Boost", "MRR2");
+  LCFs = LCorrection("2016", "2Boost", "MRR2","run_2020_09_18.root");
   h1[3][1][0] = get<0>(LCFs); h1[4][1][0] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "1Boost", "MRR2");
+  LCFs = LCorrection("2017", "1Boost", "MRR2","run_2020_09_18.root");
   h1[3][2][0] = get<0>(LCFs); h1[4][2][0] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "2Boost", "MRR2");
+  LCFs = LCorrection("2017", "2Boost", "MRR2","run_2020_09_18.root");
   h1[3][3][0] = get<0>(LCFs); h1[4][3][0] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "1Boost", "MRR2");
+  LCFs = LCorrection("2018", "1Boost", "MRR2","run_2020_09_18.root");
   h1[3][4][0] = get<0>(LCFs); h1[4][4][0] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "2Boost", "MRR2");
+  LCFs = LCorrection("2018", "2Boost", "MRR2","run_2020_09_18.root");
   h1[3][5][0] = get<0>(LCFs); h1[4][5][0] = get<1>(LCFs);
 
-  CFs = Correction("2016", "1Boost", "NJet");
+  NonIsoCFs = NonIsoCorrection("2016", "MRR2","run_2020_09_18.root");
+  h1[5][0][0] = get<0>(NonIsoCFs); h1[5][1][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "MRR2","run_2020_09_18.root");
+  h1[5][2][0] = get<0>(NonIsoCFs); h1[5][3][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "MRR2","run_2020_09_18.root");
+  h1[5][4][0] = get<0>(NonIsoCFs); h1[5][5][0] = get<1>(NonIsoCFs);
+
+  output = new TFile("CFs.root", "recreate");
+  for(int i=0;i<6;i++) {
+    for(int j=0;j<6;j++) h1[i][j][0]->Write();
+  }
+
+  CFs = Correction("2016", "1Boost", "NJet", "run_2020_09_18.root");
   h1[0][0][1] = get<0>(CFs); h1[1][0][1] = get<1>(CFs); h1[2][0][1] = get<2>(CFs);
-  CFs = Correction("2016", "2Boost", "NJet");
+  CFs = Correction("2016", "2Boost", "NJet", "run_2020_09_18.root");
   h1[0][1][1] = get<0>(CFs); h1[1][1][1] = get<1>(CFs); h1[2][1][1] = get<2>(CFs);
-  CFs = Correction("2017", "1Boost", "NJet");
+  CFs = Correction("2017", "1Boost", "NJet", "run_2020_09_18.root");
   h1[0][2][1] = get<0>(CFs); h1[1][2][1] = get<1>(CFs); h1[2][2][1] = get<2>(CFs);
-  CFs = Correction("2017", "2Boost", "NJet");
+  CFs = Correction("2017", "2Boost", "NJet", "run_2020_09_18.root");
   h1[0][3][1] = get<0>(CFs); h1[1][3][1] = get<1>(CFs); h1[2][3][1] = get<2>(CFs);
-  CFs = Correction("2018", "1Boost", "NJet");
+  CFs = Correction("2018", "1Boost", "NJet", "run_2020_09_18.root");
   h1[0][4][1] = get<0>(CFs); h1[1][4][1] = get<1>(CFs); h1[2][4][1] = get<2>(CFs);
-  CFs = Correction("2018", "2Boost", "NJet");
+  CFs = Correction("2018", "2Boost", "NJet", "run_2020_09_18.root");
   h1[0][5][1] = get<0>(CFs); h1[1][5][1] = get<1>(CFs); h1[2][5][1] = get<2>(CFs);
 
-  LCFs = LCorrection("2016", "1Boost", "NJet");
+  LCFs = LCorrection("2016", "1Boost", "NJet","run_2020_09_18.root");
   h1[3][0][1] = get<0>(LCFs); h1[4][0][1] = get<1>(LCFs);
-  LCFs = LCorrection("2016", "2Boost", "NJet");
+  LCFs = LCorrection("2016", "2Boost", "NJet","run_2020_09_18.root");
   h1[3][1][1] = get<0>(LCFs); h1[4][1][1] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "1Boost", "NJet");
+  LCFs = LCorrection("2017", "1Boost", "NJet","run_2020_09_18.root");
   h1[3][2][1] = get<0>(LCFs); h1[4][2][1] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "2Boost", "NJet");
+  LCFs = LCorrection("2017", "2Boost", "NJet","run_2020_09_18.root");
   h1[3][3][1] = get<0>(LCFs); h1[4][3][1] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "1Boost", "NJet");
+  LCFs = LCorrection("2018", "1Boost", "NJet","run_2020_09_18.root");
   h1[3][4][1] = get<0>(LCFs); h1[4][4][1] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "2Boost", "NJet");
+  LCFs = LCorrection("2018", "2Boost", "NJet","run_2020_09_18.root");
   h1[3][5][1] = get<0>(LCFs); h1[4][5][1] = get<1>(LCFs);
 
-  TFile* output = new TFile("CFs.root", "recreate");
-  for(int i=0;i<5;i++) {
-     for(int j=0;j<6;j++) h1[i][j][0]->Write();
-  }
+  NonIsoCFs = NonIsoCorrection("2016", "NJet","run_2020_09_18.root");
+  h1[5][0][1] = get<0>(NonIsoCFs); h1[5][1][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "NJet","run_2020_09_18.root");
+  h1[5][2][1] = get<0>(NonIsoCFs); h1[5][3][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "NJet","run_2020_09_18.root");
+  h1[5][4][1] = get<0>(NonIsoCFs); h1[5][5][1] = get<1>(NonIsoCFs);
+
   output = new TFile("NJet_CFs.root", "recreate");
-  for(int i=0;i<5;i++) {
-     for(int j=0;j<6;j++) h1[i][j][1]->Write();
+  for(int i=0;i<6;i++) {
+    for(int j=0;j<6;j++) h1[i][j][1]->Write();
   }
 }
