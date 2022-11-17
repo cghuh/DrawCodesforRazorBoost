@@ -31,7 +31,7 @@ void UnrolledPlots(){
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
-  TString dir = "/Users/huhchanggi/temp/220112/run_2022_01_18.root";
+  TString dir = "/Users/huhchanggi/temp/220512/run_2022_05_16.root";
   TFile* file0 = TFile::Open(dir);
 
   TString path = "/Counts_vs_MRR2/Syst_vs_MRR2/";
@@ -75,6 +75,11 @@ void UnrolledPlots(){
   TH2D* hempty = new TH2D("empty", "", 6,0,6,83,0,83);
 
   TH2D* hist[10];
+  int NBins_had = 64;
+  int NBins_H   = 96;
+  int NBins_lep = 72;
+  int NBins = NBins_had + NBins_H + NBins_lep;
+  NBins = 174;
   hist[0] = new TH2D("multijet", ";Bin;variation", 174, 0, 174, 83, 0, 83);
   for(int i=1;i<10;i++) hist[i] = (TH2D*)hist[0]->Clone(); 
   TH2D* hhtemp[12][3];
