@@ -1,7 +1,7 @@
 void syst(){
 
   int nsyst = 12;
-  int nSFsyst = 29;
+  int nSFsyst = 18;
   nsyst += nSFsyst;
   nsyst--;
   double num1, num2, num3;
@@ -13,12 +13,12 @@ void syst(){
     for(int i=0;i<=nsyst;i++){ //X-axis
       if(i==j) cout << std::setw(5) << num2;
       else     cout << std::setw(5) << num1; 
-      if(i==nsyst) cout << " 0 0" << endl;
+      if(i==nsyst) cout << " 3 0" << endl;
     }
     for(int i=0;i<=nsyst;i++){ //X-axis
       if(i==j) cout << std::setw(5) << num3;
       else     cout << std::setw(5) << num1; 
-      if(i==nsyst) cout << " 0 0" << endl;
+      if(i==nsyst) cout << " 3 0" << endl;
     }
   }
 }
