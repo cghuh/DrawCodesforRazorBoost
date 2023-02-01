@@ -2,7 +2,7 @@ void CalcComparison(TString period="2016"){
   TH1::SetDefaultSumw2();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  TString locate = "/Users/huhchanggi/temp/220512/run_2022_05_16";
+  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230112/run_2023_01_16";
   TFile* file1 = TFile::Open(locate+".root");
 
   TString histname[2][10];
@@ -46,6 +46,7 @@ void CalcComparison(TString period="2016"){
       if(htemp[j][i]->GetNbinsX() != 1) cout << "# of bin isn't 6" << endl;
     }
   }
+
   htemp[0][9]->Add(htemp[0][0],-1);
   htemp[0][9]->Add(htemp[0][2],-1);
   htemp[0][9]->Add(htemp[0][3],-1);
@@ -54,8 +55,8 @@ void CalcComparison(TString period="2016"){
   htemp[0][9]->Add(htemp[0][6],-1);
   htemp[0][9]->Add(htemp[0][7],-1);
   htemp[0][9]->Add(htemp[0][8],-1);
-  htemp[0][9]->Divide(htemp[0][1]);
 
+  htemp[0][9]->Divide(htemp[0][1]);
   htemp[1][9]->Add(htemp[1][1],-1);
   htemp[1][9]->Add(htemp[1][2],-1);
   htemp[1][9]->Add(htemp[1][3],-1);

@@ -1,7 +1,7 @@
 void syst(){
 
-  int nsyst = 12;
-  int nSFsyst = 18;
+  int nsyst = 11;
+  int nSFsyst = 17;
   nsyst += nSFsyst;
   nsyst--;
   double num1, num2, num3;
