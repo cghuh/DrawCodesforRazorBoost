@@ -55,7 +55,7 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
     c3 = new TCanvas(name.c_str(), "", 900, 900);
     if(i > 1 && TString(sample).Contains("MRR2")) {
       if(i > 3 && TString(sample).Contains("MRR2")) {
-        QError[i-1]->Rebin(100);
+        QError[i-1]->Rebin(50);
         TError[i-1]->Rebin(20);
         WError[i-1]->Rebin(20);
       }
@@ -439,7 +439,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*, TGraphAsymmErrors*> Correction(TSt
 
   TString histname[3][9];
   TString path = "/Counts_vs_"+obj+"/Syst_vs_"+obj;
-  if(TString(obj).Contains("NJet")) path = "/"+obj;
+  if(TString(obj).Contains("NJet")||TString(period).Contains("run2")) path = "/"+obj;
   histname[0][0] = path+"/Data_"+period+"_CR_QCD17_"+region;
   histname[0][1] = path+"/Multijet_"+period+"_CR_QCD17_"+region;
   histname[0][2] = path+"/Top_"+period+"_CR_QCD17_"+region;
@@ -678,7 +678,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCorrection(TString period, TStrin
 
   TString histname[2][9];
   TString path = "/Counts_vs_"+obj+"/Syst_vs_"+obj;
-  if(TString(obj).Contains("NJet")) path = "/"+obj;
+  if(TString(obj).Contains("NJet")||TString(period).Contains("run2")) path = "/"+obj;
   histname[0][0] = path+"/Data_"+period+"_CR_L17_"+region;
   histname[0][1] = path+"/Multijet_"+period+"_CR_L17_"+region;
   histname[0][2] = path+"/Top_"+period+"_CR_L17_"+region;
@@ -912,7 +912,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCorrection(TString period, TStrin
   return make_tuple(CF_L, CF_T);
 }
 
-tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, TString obj, TString sample){
+tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, TString region, TString obj, TString sample){
   delete gROOT->FindObject("c1");
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
@@ -922,25 +922,26 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
 
   TString histname[2][9];
   TString path = "/Counts_vs_"+obj+"/Syst_vs_"+obj;
-  if(TString(obj).Contains("NJet")) path = "/"+obj;
-  histname[0][0] = path+"/Data_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][1] = path+"/Multijet_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][2] = path+"/Top_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][3] = path+"/TT_powheg_pythia8_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][4] = path+"/WToLNu_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][5] = path+"/ZToNuNu_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][6] = path+"/Multiboson_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][7] = path+"/GJets_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[0][8] = path+"/DYToLL_"+period+"_CR_NonIso_0b_RMTdPhi";
-  histname[1][0] = path+"/Data_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][1] = path+"/Multijet_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][2] = path+"/Top_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][3] = path+"/TT_powheg_pythia8_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][4] = path+"/WToLNu_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][5] = path+"/ZToNuNu_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][6] = path+"/Multiboson_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][7] = path+"/GJets_"+period+"_CR_NonIso_b_RMTdPhi";
-  histname[1][8] = path+"/DYToLL_"+period+"_CR_NonIso_b_RMTdPhi";
+  if(TString(obj).Contains("NJet")||TString(period).Contains("run2")) path = "/"+obj;
+  histname[0][0] = path+"/Data_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][1] = path+"/Multijet_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][2] = path+"/Top_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][3] = path+"/TT_powheg_pythia8_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][4] = path+"/WToLNu_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][5] = path+"/ZToNuNu_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][6] = path+"/Multiboson_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][7] = path+"/GJets_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[0][8] = path+"/DYToLL_"+period+"_CR_NonIso_0b_RMTdPhi_"+region;
+  histname[1][0] = path+"/Data_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][1] = path+"/Multijet_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][2] = path+"/Top_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][3] = path+"/TT_powheg_pythia8_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][4] = path+"/WToLNu_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][5] = path+"/ZToNuNu_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][6] = path+"/Multiboson_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][7] = path+"/GJets_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  histname[1][8] = path+"/DYToLL_"+period+"_CR_NonIso_b_RMTdPhi_"+region;
+  cout << histname[0][0] << endl;
 
   TH2D* bkg2D[2][9];
   TH1D* bkg[2][9];
@@ -1013,7 +1014,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
   vector<double> temp3;
   vector<double> temp4;
 
-  Err_CFs = CalcLErrors(CF, bkg, (string)obj+(string)period);
+  Err_CFs = CalcLErrors(CF, bkg, (string)obj+(string)period+(string)region);
   temp1 = get<0>(Err_CFs);
   temp2 = get<1>(Err_CFs);
   temp3 = get<2>(Err_CFs);
@@ -1100,8 +1101,8 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
   if(flag == 1) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_T, tbinerr_x, tbinerr_x, cf_T_dw, cf_T_up);
   if(flag == 2) CF_T = new TGraphAsymmErrors(binsize-1, tbinx, cf_t, tbinerr_x, tbinerr_x, cf_t_dw, cf_T_up);
 
-  string name_W = "CF_NonIso_W_"+(string)period;
-  string name_T = "CF_NonIso_T_"+(string)period;
+  string name_W = "CF_NonIso_W_"+(string)period+"_"+(string)region;
+  string name_T = "CF_NonIso_T_"+(string)period+"_"+(string)region;
   CF_W->SetName(name_W.c_str());
   CF_T->SetName(name_T.c_str());
 
@@ -1125,16 +1126,17 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
 
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
-  leg->SetHeader("boost jet with Non-isolated lepton final state");
+  if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet with Non-isolated lepton final state");
+  else if(TString(region).Contains("2Boost")) leg->SetHeader("#geq 2 boost jet with Non-isolated lepton final state");
   leg->AddEntry(CF_W,  "W(#rightarrowl#nu)+jet CF", "p");
   leg->AddEntry(CF_T,  "Top(TT+ST) CF", "p");
   leg->Draw();
 
-  c1->SaveAs("plot/"+period+obj+"_NonIso_CF.png");
+  c1->SaveAs("plot/"+period+obj+"_NonIso_CF_"+region+".png");
   return make_tuple(CF_W, CF_T);
 }
 
-void DrawCF(TString Title, TGraphAsymmErrors* g1, TGraphAsymmErrors* g2,TGraphAsymmErrors* g3){
+void DrawCF(TString Title, TGraphAsymmErrors* g2, TGraphAsymmErrors* g3, TGraphAsymmErrors* g4, TGraphAsymmErrors* g5, TGraphAsymmErrors* g1){
   delete gROOT->FindObject("c1");
   TCanvas* c1 = new TCanvas("c1","",700,700);
   c1->SetGridx();
@@ -1143,168 +1145,224 @@ void DrawCF(TString Title, TGraphAsymmErrors* g1, TGraphAsymmErrors* g2,TGraphAs
   g1->SetMarkerStyle(21);
   g2->SetMarkerStyle(21);
   g3->SetMarkerStyle(21);
+  g4->SetMarkerStyle(21);
+  g5->SetMarkerStyle(21);
   g1->SetMarkerColor(kBlack);
   g2->SetMarkerColor(kRed);
   g3->SetMarkerColor(kBlue);
+  g4->SetMarkerColor(kMagenta);
+  g5->SetMarkerColor(kCyan);
   g1->SetLineColor(kBlack);
   g2->SetLineColor(kRed);
   g3->SetLineColor(kBlue);
+  g4->SetLineColor(kMagenta);
+  g5->SetLineColor(kCyan);
   TMultiGraph *mg = new TMultiGraph();
   mg->Add(g1);
   mg->Add(g2);
   mg->Add(g3);
+  mg->Add(g4);
+  mg->Add(g5);
   if(TString(Title).Contains("MRR2")) mg->GetXaxis()->SetTitle("M_{R} #times R^{2}");
   if(TString(Title).Contains("NJet")) mg->GetXaxis()->SetTitle("N_{AK4 jet}");
   mg->Draw("AP");
 
-  auto leg = new TLegend(0.45,0.77,0.9,0.9);
+  auto leg = new TLegend(0.55,0.57,0.9,0.9);
   leg->SetHeader(Title);
-  leg->AddEntry(g1, "2016", "p");
-  leg->AddEntry(g2, "2017", "p");
-  leg->AddEntry(g3, "2018", "p");
+  leg->AddEntry(g1, "run2", "p");
+  leg->AddEntry(g2, "2016", "p");
+  leg->AddEntry(g3, "2016APV", "p");
+  leg->AddEntry(g4, "2017", "p");
+  leg->AddEntry(g5, "2018", "p");
   leg->Draw();
 
   Title.ReplaceAll(", ", "_");
   c1->SaveAs("plot/CF_"+Title+".png");
 }
 
-void DrawCFs(TGraphAsymmErrors* h1[7][8][2]){
+void DrawCFs(TGraphAsymmErrors* h1[7][10][2]){
 
-  DrawCF("Q, MRR2, 1Boost", h1[0][0][0], h1[0][4][0], h1[0][6][0]);
-  DrawCF("T, MRR2, 1Boost", h1[1][0][0], h1[1][4][0], h1[1][6][0]);
-  DrawCF("W, MRR2, 1Boost", h1[2][0][0], h1[2][4][0], h1[2][6][0]);
-  DrawCF("Q, MRR2, 2Boost", h1[0][1][0], h1[0][5][0], h1[0][7][0]);
-  DrawCF("T, MRR2, 2Boost", h1[1][1][0], h1[1][5][0], h1[1][7][0]);
-  DrawCF("W, MRR2, 2Boost", h1[2][1][0], h1[2][5][0], h1[2][7][0]);
+  DrawCF("Q, MRR2, 1Boost", h1[0][0][0], h1[0][2][0], h1[0][4][0], h1[0][6][0], h1[0][8][0]);
+  DrawCF("T, MRR2, 1Boost", h1[1][0][0], h1[1][2][0], h1[1][4][0], h1[1][6][0], h1[1][8][0]);
+  DrawCF("W, MRR2, 1Boost", h1[2][0][0], h1[2][2][0], h1[2][4][0], h1[2][6][0], h1[2][8][0]);
+  DrawCF("Q, MRR2, 2Boost", h1[0][1][0], h1[0][3][0], h1[0][5][0], h1[0][7][0], h1[0][9][0]);
+  DrawCF("T, MRR2, 2Boost", h1[1][1][0], h1[1][3][0], h1[1][5][0], h1[1][7][0], h1[1][9][0]);
+  DrawCF("W, MRR2, 2Boost", h1[2][1][0], h1[2][3][0], h1[2][5][0], h1[2][7][0], h1[2][9][0]);
 
-  DrawCF("L, MRR2, 1Boost", h1[3][0][0], h1[3][4][0], h1[3][6][0]);
-  DrawCF("LT, MRR2, 1Boost", h1[4][0][0], h1[4][4][0], h1[4][6][0]);
-  DrawCF("L, MRR2, 2Boost", h1[3][1][0], h1[3][5][0], h1[3][7][0]);
-  DrawCF("LT, MRR2, 2Boost", h1[4][1][0], h1[4][5][0], h1[4][7][0]);
+  DrawCF("L, MRR2, 1Boost" , h1[3][0][0], h1[3][2][0], h1[3][4][0], h1[3][6][0], h1[3][8][0]);
+  DrawCF("LT, MRR2, 1Boost", h1[4][0][0], h1[4][2][0], h1[4][4][0], h1[4][6][0], h1[4][9][0]);
+  DrawCF("L, MRR2, 2Boost" , h1[3][1][0], h1[3][3][0], h1[3][5][0], h1[3][7][0], h1[3][8][0]);
+  DrawCF("LT, MRR2, 2Boost", h1[4][1][0], h1[4][3][0], h1[4][5][0], h1[4][7][0], h1[4][9][0]);
 
-  DrawCF("W, MRR2, NonIso", h1[5][0][0], h1[5][4][0], h1[5][6][0]);
-  DrawCF("T, MRR2, NonIso", h1[5][1][0], h1[5][5][0], h1[5][7][0]);
+  DrawCF("W, MRR2, NonIso, 1Boost", h1[5][0][0], h1[5][2][0], h1[5][4][0], h1[5][6][0], h1[5][8][0]);
+  DrawCF("W, MRR2, NonIso, 2Boost", h1[5][1][0], h1[5][3][0], h1[5][5][0], h1[5][7][0], h1[5][9][0]);
+  DrawCF("T, MRR2, NonIso, 1Boost", h1[6][0][0], h1[6][2][0], h1[6][4][0], h1[6][6][0], h1[6][8][0]);
+  DrawCF("T, MRR2, NonIso, 2Boost", h1[6][1][0], h1[6][3][0], h1[6][5][0], h1[6][7][0], h1[6][9][0]);
 
-  DrawCF("Q, NJet, 1Boost", h1[0][0][1], h1[0][4][1], h1[0][6][1]);
-  DrawCF("T, NJet, 1Boost", h1[1][0][1], h1[1][4][1], h1[1][6][1]);
-  DrawCF("W, NJet, 1Boost", h1[2][0][1], h1[2][4][1], h1[2][6][1]);
-  DrawCF("Q, NJet, 2Boost", h1[0][1][1], h1[0][5][1], h1[0][7][1]);
-  DrawCF("T, NJet, 2Boost", h1[1][1][1], h1[1][5][1], h1[1][7][1]);
-  DrawCF("W, NJet, 2Boost", h1[2][1][1], h1[2][5][1], h1[2][7][1]);
+  DrawCF("Q, NJet, 1Boost", h1[0][0][1], h1[0][2][1], h1[0][4][1], h1[0][6][1], h1[0][8][1]);
+  DrawCF("T, NJet, 1Boost", h1[1][0][1], h1[1][2][1], h1[1][4][1], h1[1][6][1], h1[1][8][1]);
+  DrawCF("W, NJet, 1Boost", h1[2][0][1], h1[2][2][1], h1[2][4][1], h1[2][6][1], h1[2][8][1]);
+  DrawCF("Q, NJet, 2Boost", h1[0][1][1], h1[0][3][1], h1[0][5][1], h1[0][7][1], h1[0][9][1]);
+  DrawCF("T, NJet, 2Boost", h1[1][1][1], h1[1][3][1], h1[1][5][1], h1[1][7][1], h1[1][9][1]);
+  DrawCF("W, NJet, 2Boost", h1[2][1][1], h1[2][3][1], h1[2][5][1], h1[2][7][1], h1[2][9][1]);
 
-  DrawCF("L, NJet, 1Boost", h1[3][0][1], h1[3][4][1], h1[3][6][1]);
-  DrawCF("LT, NJet, 1Boost", h1[4][0][1], h1[4][4][1], h1[4][6][1]);
-  DrawCF("L, NJet, 2Boost", h1[3][1][1], h1[3][5][1], h1[3][7][1]);
-  DrawCF("LT, NJet, 2Boost", h1[4][1][1], h1[4][5][1], h1[4][7][1]);
+  DrawCF("L, NJet, 1Boost" , h1[3][0][1], h1[3][2][1], h1[3][4][1], h1[3][6][1], h1[3][8][1]);
+  DrawCF("LT, NJet, 1Boost", h1[4][0][1], h1[4][2][1], h1[4][4][1], h1[4][6][1], h1[4][9][1]);
+  DrawCF("L, NJet, 2Boost" , h1[3][1][1], h1[3][3][1], h1[3][5][1], h1[3][7][1], h1[3][8][1]);
+  DrawCF("LT, NJet, 2Boost", h1[4][1][1], h1[4][3][1], h1[4][5][1], h1[4][7][1], h1[4][9][1]);
 
-  DrawCF("W, NJet, NonIso", h1[5][0][1], h1[5][4][1], h1[5][6][1]);
-  DrawCF("T, NJet, NonIso", h1[5][1][1], h1[5][5][1], h1[5][7][1]);
+  DrawCF("W, NJet, NonIso, 1Boost", h1[5][0][1], h1[5][2][1], h1[5][4][1], h1[5][6][1], h1[5][8][1]);
+  DrawCF("W, NJet, NonIso, 2Boost", h1[5][1][1], h1[5][3][1], h1[5][5][1], h1[5][7][1], h1[5][9][1]);
+  DrawCF("T, NJet, NonIso, 1Boost", h1[6][0][1], h1[6][2][1], h1[6][4][1], h1[6][6][1], h1[6][8][1]);
+  DrawCF("T, NJet, NonIso, 2Boost", h1[6][1][1], h1[6][3][1], h1[6][5][1], h1[6][7][1], h1[6][9][1]);
+
 }
 
 void BkgCorr_solver_NF(){
   tuple<TGraphAsymmErrors*, TGraphAsymmErrors*, TGraphAsymmErrors*> CFs;
   tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCFs;
   tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCFs;
-  TGraphAsymmErrors* h1[7][8][2];
+  TGraphAsymmErrors* h1[7][10][2];
   TFile* output;
 
-  CFs = Correction("2016", "1Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2016", "1Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][0][0] = get<0>(CFs); h1[1][0][0] = get<1>(CFs); h1[2][0][0] = get<2>(CFs);
-  CFs = Correction("2016", "2Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2016", "2Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][1][0] = get<0>(CFs); h1[1][1][0] = get<1>(CFs); h1[2][1][0] = get<2>(CFs);
-  //CFs = Correction("2016APV", "1Boost", "MRR2Bin", "230112/run_2023_01_15.root");
-  //h1[0][2][0] = get<0>(CFs); h1[1][2][0] = get<1>(CFs); h1[2][2][0] = get<2>(CFs);
-  //CFs = Correction("2016APV", "2Boost", "MRR2Bin", "230112/run_2023_01_15.root");
-  //h1[0][3][0] = get<0>(CFs); h1[1][3][0] = get<1>(CFs); h1[2][3][0] = get<2>(CFs);
-  CFs = Correction("2017", "1Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2016APV", "1Boost", "MRR2Bin", "230131/run_2023_02_08.root");
+  h1[0][2][0] = get<0>(CFs); h1[1][2][0] = get<1>(CFs); h1[2][2][0] = get<2>(CFs);
+  CFs = Correction("2016APV", "2Boost", "MRR2Bin", "230131/run_2023_02_08.root");
+  h1[0][3][0] = get<0>(CFs); h1[1][3][0] = get<1>(CFs); h1[2][3][0] = get<2>(CFs);
+  CFs = Correction("2017", "1Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][4][0] = get<0>(CFs); h1[1][4][0] = get<1>(CFs); h1[2][4][0] = get<2>(CFs);
-  CFs = Correction("2017", "2Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2017", "2Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][5][0] = get<0>(CFs); h1[1][5][0] = get<1>(CFs); h1[2][5][0] = get<2>(CFs);
-  CFs = Correction("2018", "1Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2018", "1Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][6][0] = get<0>(CFs); h1[1][6][0] = get<1>(CFs); h1[2][6][0] = get<2>(CFs);
-  CFs = Correction("2018", "2Boost", "MRR2Bin", "230112/run_2023_01_15.root");
+  CFs = Correction("2018", "2Boost", "MRR2Bin", "230131/run_2023_02_08.root");
   h1[0][7][0] = get<0>(CFs); h1[1][7][0] = get<1>(CFs); h1[2][7][0] = get<2>(CFs);
+  CFs = Correction("run2", "1Boost", "MRR2Bin", "230131/run_2023_02_08.root");
+  h1[0][8][0] = get<0>(CFs); h1[1][8][0] = get<1>(CFs); h1[2][8][0] = get<2>(CFs);
+  CFs = Correction("run2", "2Boost", "MRR2Bin", "230131/run_2023_02_08.root");
+  h1[0][9][0] = get<0>(CFs); h1[1][9][0] = get<1>(CFs); h1[2][9][0] = get<2>(CFs);
 
-  LCFs = LCorrection("2016", "1Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2016", "1Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][0][0] = get<0>(LCFs); h1[4][0][0] = get<1>(LCFs);
-  LCFs = LCorrection("2016", "2Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2016", "2Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][1][0] = get<0>(LCFs); h1[4][1][0] = get<1>(LCFs);
-  //LCFs = LCorrection("2016APV", "1Boost", "MRR2Bin","230112/run_2023_01_15.root");
-  //h1[3][2][0] = get<0>(LCFs); h1[4][2][0] = get<1>(LCFs);
-  //LCFs = LCorrection("2016APV", "2Boost", "MRR2Bin","230112/run_2023_01_15.root");
-  //h1[3][3][0] = get<0>(LCFs); h1[4][3][0] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "1Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2016APV", "1Boost", "MRR21vlBin","230131/run_2023_02_08.root");
+  h1[3][2][0] = get<0>(LCFs); h1[4][2][0] = get<1>(LCFs);
+  LCFs = LCorrection("2016APV", "2Boost", "MRR21vlBin","230131/run_2023_02_08.root");
+  h1[3][3][0] = get<0>(LCFs); h1[4][3][0] = get<1>(LCFs);
+  LCFs = LCorrection("2017", "1Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][4][0] = get<0>(LCFs); h1[4][4][0] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "2Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2017", "2Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][5][0] = get<0>(LCFs); h1[4][5][0] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "1Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2018", "1Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][6][0] = get<0>(LCFs); h1[4][6][0] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "2Boost", "MRR2Bin","230112/run_2023_01_15.root");
+  LCFs = LCorrection("2018", "2Boost", "MRR21vlBin","230131/run_2023_02_08.root");
   h1[3][7][0] = get<0>(LCFs); h1[4][7][0] = get<1>(LCFs);
+  LCFs = LCorrection("run2", "1Boost", "MRR21vlBin","230131/run_2023_02_08.root");
+  h1[3][8][0] = get<0>(LCFs); h1[4][8][0] = get<1>(LCFs);
+  LCFs = LCorrection("run2", "2Boost", "MRR21vlBin","230131/run_2023_02_08.root");
+  h1[3][9][0] = get<0>(LCFs); h1[4][9][0] = get<1>(LCFs);
 
-  NonIsoCFs = NonIsoCorrection("2016", "MRR2Bin","230112/run_2023_01_17.root");
-  h1[5][0][0] = get<0>(NonIsoCFs); h1[5][1][0] = get<1>(NonIsoCFs);
- // NonIsoCFs = NonIsoCorrection("2016APV", "MRR2Bin","230112/run_2023_01_17.root");
- // h1[5][2][0] = get<0>(NonIsoCFs); h1[5][3][0] = get<1>(NonIsoCFs);
-  NonIsoCFs = NonIsoCorrection("2017", "MRR2Bin","230112/run_2023_01_17.root");
-  h1[5][4][0] = get<0>(NonIsoCFs); h1[5][5][0] = get<1>(NonIsoCFs);
-  NonIsoCFs = NonIsoCorrection("2018", "MRR2Bin","230112/run_2023_01_17.root");
-  h1[5][6][0] = get<0>(NonIsoCFs); h1[5][7][0] = get<1>(NonIsoCFs);
+
+  NonIsoCFs = NonIsoCorrection("2016", "1Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][0][0] = get<0>(NonIsoCFs); h1[6][0][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016", "2Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][1][0] = get<0>(NonIsoCFs); h1[6][1][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016APV", "1Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][2][0] = get<0>(NonIsoCFs); h1[6][2][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016APV", "2Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][3][0] = get<0>(NonIsoCFs); h1[6][3][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "1Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][4][0] = get<0>(NonIsoCFs); h1[6][4][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "2Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][5][0] = get<0>(NonIsoCFs); h1[6][5][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "1Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][6][0] = get<0>(NonIsoCFs); h1[6][6][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "2Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][7][0] = get<0>(NonIsoCFs); h1[6][7][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("run2", "1Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][8][0] = get<0>(NonIsoCFs); h1[6][8][0] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("run2", "2Boost", "MRR2Bin","230131/run_2023_02_11.root");
+  h1[5][9][0] = get<0>(NonIsoCFs); h1[6][9][0] = get<1>(NonIsoCFs);
 
   output = new TFile("CFs.root", "recreate");
-  for(int i=0;i<8;i++) {
-    if(i==2 || i==3) continue;
-    for(int j=0;j<6;j++) h1[j][i][0]->Write();
+  for(int i=0;i<10;i++) {
+    //if(i==2 || i==3) continue;
+    for(int j=0;j<7;j++) h1[j][i][0]->Write();
   }
 
-  CFs = Correction("2016", "1Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2016", "1Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][0][1] = get<0>(CFs); h1[1][0][1] = get<1>(CFs); h1[2][0][1] = get<2>(CFs);
-  CFs = Correction("2016", "2Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2016", "2Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][1][1] = get<0>(CFs); h1[1][1][1] = get<1>(CFs); h1[2][1][1] = get<2>(CFs);
-  //CFs = Correction("2016APV", "1Boost", "NJetBins", "230112/run_2023_01_16.root");
-  //h1[0][2][1] = get<0>(CFs); h1[1][2][1] = get<1>(CFs); h1[2][2][1] = get<2>(CFs);
-  //CFs = Correction("2016APV", "2Boost", "NJetBins", "230112/run_2023_01_16.root");
-  //h1[0][3][1] = get<0>(CFs); h1[1][3][1] = get<1>(CFs); h1[2][3][1] = get<2>(CFs);
-  CFs = Correction("2017", "1Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2016APV", "1Boost", "NJetBins", "230131/run_2023_02_10.root");
+  h1[0][2][1] = get<0>(CFs); h1[1][2][1] = get<1>(CFs); h1[2][2][1] = get<2>(CFs);
+  CFs = Correction("2016APV", "2Boost", "NJetBins", "230131/run_2023_02_10.root");
+  h1[0][3][1] = get<0>(CFs); h1[1][3][1] = get<1>(CFs); h1[2][3][1] = get<2>(CFs);
+  CFs = Correction("2017", "1Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][4][1] = get<0>(CFs); h1[1][4][1] = get<1>(CFs); h1[2][4][1] = get<2>(CFs);
-  CFs = Correction("2017", "2Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2017", "2Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][5][1] = get<0>(CFs); h1[1][5][1] = get<1>(CFs); h1[2][5][1] = get<2>(CFs);
-  CFs = Correction("2018", "1Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2018", "1Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][6][1] = get<0>(CFs); h1[1][6][1] = get<1>(CFs); h1[2][6][1] = get<2>(CFs);
-  CFs = Correction("2018", "2Boost", "NJetBins", "230112/run_2023_01_16.root");
+  CFs = Correction("2018", "2Boost", "NJetBins", "230131/run_2023_02_10.root");
   h1[0][7][1] = get<0>(CFs); h1[1][7][1] = get<1>(CFs); h1[2][7][1] = get<2>(CFs);
+  CFs = Correction("run2", "1Boost", "NJetBins", "230131/run_2023_02_10.root");
+  h1[0][8][1] = get<0>(CFs); h1[1][8][1] = get<1>(CFs); h1[2][8][1] = get<2>(CFs);
+  CFs = Correction("run2", "2Boost", "NJetBins", "230131/run_2023_02_10.root");
+  h1[0][9][1] = get<0>(CFs); h1[1][9][1] = get<1>(CFs); h1[2][9][1] = get<2>(CFs);
 
-  LCFs = LCorrection("2016", "1Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2016", "1Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][0][1] = get<0>(LCFs); h1[4][0][1] = get<1>(LCFs);
-  LCFs = LCorrection("2016", "2Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2016", "2Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][1][1] = get<0>(LCFs); h1[4][1][1] = get<1>(LCFs);
-  //LCFs = LCorrection("2016APV", "1Boost", "NJetBins","230112/run_2023_01_16.root");
-  //h1[3][2][1] = get<0>(LCFs); h1[4][2][1] = get<1>(LCFs);
-  //LCFs = LCorrection("2016APV", "2Boost", "NJetBins","230112/run_2023_01_16.root");
-  //h1[3][3][1] = get<0>(LCFs); h1[4][3][1] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "1Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2016APV", "1Boost", "NJetBins","230131/run_2023_02_10.root");
+  h1[3][2][1] = get<0>(LCFs); h1[4][2][1] = get<1>(LCFs);
+  LCFs = LCorrection("2016APV", "2Boost", "NJetBins","230131/run_2023_02_10.root");
+  h1[3][3][1] = get<0>(LCFs); h1[4][3][1] = get<1>(LCFs);
+  LCFs = LCorrection("2017", "1Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][4][1] = get<0>(LCFs); h1[4][4][1] = get<1>(LCFs);
-  LCFs = LCorrection("2017", "2Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2017", "2Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][5][1] = get<0>(LCFs); h1[4][5][1] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "1Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2018", "1Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][6][1] = get<0>(LCFs); h1[4][6][1] = get<1>(LCFs);
-  LCFs = LCorrection("2018", "2Boost", "NJetBins","230112/run_2023_01_16.root");
+  LCFs = LCorrection("2018", "2Boost", "NJetBins","230131/run_2023_02_10.root");
   h1[3][7][1] = get<0>(LCFs); h1[4][7][1] = get<1>(LCFs);
+  LCFs = LCorrection("run2", "1Boost", "NJetBins","230131/run_2023_02_10.root");
+  h1[3][8][1] = get<0>(LCFs); h1[4][8][1] = get<1>(LCFs);
+  LCFs = LCorrection("run2", "2Boost", "NJetBins","230131/run_2023_02_10.root");
+  h1[3][9][1] = get<0>(LCFs); h1[4][9][1] = get<1>(LCFs);
 
-  NonIsoCFs = NonIsoCorrection("2016", "NJetBins","230112/run_2023_01_24.root");
-  h1[5][0][1] = get<0>(NonIsoCFs); h1[5][1][1] = get<1>(NonIsoCFs);
-  //NonIsoCFs = NonIsoCorrection("2016APV", "NJetBins","230112/run_2023_01_24.root");
-  //h1[5][2][1] = get<0>(NonIsoCFs); h1[5][3][1] = get<1>(NonIsoCFs);
-  NonIsoCFs = NonIsoCorrection("2017", "NJetBins","230112/run_2023_01_24.root");
-  h1[5][4][1] = get<0>(NonIsoCFs); h1[5][5][1] = get<1>(NonIsoCFs);
-  NonIsoCFs = NonIsoCorrection("2018", "NJetBins","230112/run_2023_01_24.root");
-  h1[5][6][1] = get<0>(NonIsoCFs); h1[5][7][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016", "1Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][0][1] = get<0>(NonIsoCFs); h1[6][0][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016", "2Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][1][1] = get<0>(NonIsoCFs); h1[6][1][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016APV", "1Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][2][1] = get<0>(NonIsoCFs); h1[6][2][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2016APV", "2Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][3][1] = get<0>(NonIsoCFs); h1[6][3][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "1Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][4][1] = get<0>(NonIsoCFs); h1[6][4][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2017", "2Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][5][1] = get<0>(NonIsoCFs); h1[6][5][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "1Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][6][1] = get<0>(NonIsoCFs); h1[6][6][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("2018", "2Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][7][1] = get<0>(NonIsoCFs); h1[6][7][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("run2", "1Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][8][1] = get<0>(NonIsoCFs); h1[6][8][1] = get<1>(NonIsoCFs);
+  NonIsoCFs = NonIsoCorrection("run2", "2Boost", "NJetBins","230131/run_2023_02_12.root");
+  h1[5][9][1] = get<0>(NonIsoCFs); h1[6][9][1] = get<1>(NonIsoCFs);
 
 
   output = new TFile("NJet_CFs.root", "recreate");
-  for(int i=0;i<8;i++) {
-    if(i==2 || i==3) continue;
-    for(int j=0;j<6;j++) h1[j][i][1]->Write();
+  for(int i=0;i<10;i++) {
+    //if(i==2 || i==3) continue;
+    for(int j=0;j<7;j++) h1[j][i][1]->Write();
   }
 
   DrawCFs(h1);
