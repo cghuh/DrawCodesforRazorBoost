@@ -2,11 +2,11 @@ void CalcComparison(TString period="2016"){
   TH1::SetDefaultSumw2();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230112/run_2023_01_16";
+  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230131/run_2023_03_09";
   TFile* file1 = TFile::Open(locate+".root");
 
   TString histname[2][10];
-  TString path = "/Counts_vs_MRR2Bin/Syst_vs_MRR2Bin/";
+  TString path = "/Counts_vs_MRR2/Syst_vs_MRR2/";
   //TString path = "/Counts_vs_MRR2Bins/Syst_vs_MRR2Bins/";
   histname[0][0] = path+"DYToLL_"+period+"_CR_1PhoInv";
   histname[0][1] = path+"GJets_"+period+"_CR_1PhoInv";
@@ -42,8 +42,8 @@ void CalcComparison(TString period="2016"){
         continue;
       }
       htemp[j][i] = (TH1D*)bkg2D[j][i]->ProjectionX(Form("bin%d%d",i,j),1,1);
-      htemp[j][i]->Rebin(6);
-      if(htemp[j][i]->GetNbinsX() != 1) cout << "# of bin isn't 6" << endl;
+      htemp[j][i]->Rebin(bkg2D[j][i]->GetNbinsX());
+      //if(htemp[j][i]->GetNbinsX() != 1) cout << "# of bin isn't 6" << endl;
     }
   }
 
@@ -77,4 +77,5 @@ void DoubleRatio(){
   CalcComparison("2016");
   CalcComparison("2017");
   CalcComparison("2018");
+  CalcComparison("run2");
 }
