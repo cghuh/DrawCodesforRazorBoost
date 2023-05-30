@@ -12,6 +12,7 @@ void loopdir() {
     if (!cl->InheritsFrom("TCanvas")) continue;
     c1 = (TCanvas*)key->ReadObj();
     name = c1->GetName();
+    if(!TString(name).Contains("run2")) continue;
     //name.ReplaceAll(folder+"_","");
     c1->SaveAs("plot/error/"+name+".png");
   }

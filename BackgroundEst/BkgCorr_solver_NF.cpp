@@ -4,7 +4,7 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
   gRandom->SetSeed(time(0));
   TFile* output;
   TString name1, name2;
-  if(sample=="MRR220161Boost") output = new TFile("CF_Error.root", "recreate");
+  if(sample=="MRR2Bin20161Boost") output = new TFile("CF_Error.root", "recreate");
   else output = new TFile("CF_Error.root", "update");
   TH1D* data[3];
   TH1D* QB[3];
@@ -15,6 +15,7 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
     QB[i]    = (TH1D*)b1[i][1]->Clone();
     TB[i]    = (TH1D*)b1[i][2]->Clone();
     WB[i]    = (TH1D*)b1[i][4]->Clone();
+    
   }
   TMatrix D(3,3);
   TMatrix Q(3,3);
@@ -44,26 +45,26 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
   std::vector<double> temp1, temp2, temp3, temp4, temp5, temp6;
 
   for(int i=1; i<= data[0]->GetNbinsX();i++) {
+    if(TString(sample).Contains("MRR2") && TString(sample).Contains("APV")) num = 1;
     name = "QError_"+sample+to_string(i);
-    QError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    QError[i-1] = new TH1D(name.c_str(), "", 4000, -2., 2.);
     c1 = new TCanvas(name.c_str(), "", 900, 900);
     name = "TError_"+sample+to_string(i);
-    TError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    TError[i-1] = new TH1D(name.c_str(), "", 4000, -2., 2.);
     c2 = new TCanvas(name.c_str(), "", 900, 900);
     name = "WError_"+sample+to_string(i);
-    WError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
+    WError[i-1] = new TH1D(name.c_str(), "", 4000, -2., 2.);
     c3 = new TCanvas(name.c_str(), "", 900, 900);
-    if(i > 1 && TString(sample).Contains("MRR2")) {
-      if(i > 3 && TString(sample).Contains("MRR2")) {
-        QError[i-1]->Rebin(50);
-        TError[i-1]->Rebin(20);
-        WError[i-1]->Rebin(20);
-      }
-      else { 
-        QError[i-1]->Rebin(5);
-        TError[i-1]->Rebin(5);
-        WError[i-1]->Rebin(5);
-      }
+    if(i == 1 && TString(sample).Contains("MRR2")) {
+      QError[i-1]->Rebin(1);
+    } else if(i > 3 && TString(sample).Contains("MRR2")) {
+      QError[i-1]->Rebin(5);
+      TError[i-1]->Rebin(5);
+      WError[i-1]->Rebin(5);
+    } else { 
+      QError[i-1]->Rebin(2);
+      TError[i-1]->Rebin(2);
+      WError[i-1]->Rebin(2);
     }
     for(int m=0; m<3; m++) { // region
       D[m][0] = QB[m]->GetBinContent(i);
@@ -102,6 +103,7 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
         W[k][1] = ran_T;
         W[k][2] = ran_D;
       }
+      if(!Q.Determinant() || !T.Determinant() || !W.Determinant()) {err_Q.push_back(0); err_T.push_back(0); err_W.push_back(0);continue;}
       QError[i-1]->Fill(nom_Q-(Q.Determinant()/D.Determinant()));
       TError[i-1]->Fill(nom_T-(T.Determinant()/D.Determinant()));
       WError[i-1]->Fill(nom_W-(W.Determinant()/D.Determinant()));
@@ -129,33 +131,56 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
     temp1.push_back(bin_up);
     temp4.push_back(bin_dw);
 
-    if(TString(sample).Contains("MRR2")) {
-      QError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
-      TError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
-      WError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
-      if(i==1) {
-        QError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
-        TError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
-        WError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
-      }
-      else if (i > 2) {
-        QError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
-        TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
-      }
-    } else {
+    if(TString(sample).Contains("MRR2Bin")) {
       QError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
       TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
       WError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      if(i==1) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-0.05,0.05);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+        WError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      } else if(i==2) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-0.05,0.05);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+        WError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      } else if(i==3) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+        WError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      } else if(i==4) {
+        WError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      } else if(i>=5) {
+        QError[i-1]->GetXaxis()->SetRangeUser(-2.0,2.0);
+      }
+    } else {
+      QError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      WError[i-1]->GetXaxis()->SetRangeUser(-0.4,0.4);
+      if(i>2) {
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      }
     }
 
     c1->cd();
     QError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
     QError[i-1]->Draw();
-    auto leg = new TLegend(0.60,0.80,0.9,0.9);
+
+    TLatex *latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextSize(0.03);
+    latex->SetTextAlign(31); // align right
+    latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+    latex->SetTextAlign(11); // align left
+    latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
+
+    auto leg = new TLegend(0.60,0.80,0.9,0.88);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(0.02);
     if(TString(sample).Contains("2016APV")) name1 = "2016APV";
     else if(TString(sample).Contains("2016")) name1 = "2016";
     else if(TString(sample).Contains("2017")) name1 = "2017";
-    else name1 = "2018";
+    else if(TString(sample).Contains("2018")) name1 = "2018";
+    else name1 = "Run2";
     if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
     else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
     leg->SetHeader(name1+", CF_{QCD}"+name2+" "+(TString)(TString)to_string(i)+" bin");
@@ -191,11 +216,23 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
     c2->cd();
     TError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
     TError[i-1]->Draw();
-    leg = new TLegend(0.60,0.80,0.9,0.9);
+
+    latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextSize(0.03);
+    latex->SetTextAlign(31); // align right
+    latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+    latex->SetTextAlign(11); // align left
+    latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
+
+    leg = new TLegend(0.60,0.80,0.9,0.88);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(0.02);
     if(TString(sample).Contains("2016APV")) name1 = "2016APV";
     else if(TString(sample).Contains("2016")) name1 = "2016";
     else if(TString(sample).Contains("2017")) name1 = "2017";
-    else name1 = "2018";
+    else if(TString(sample).Contains("2018")) name1 = "2018";
+    else name1 = "Run2";
     if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
     else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
     leg->SetHeader(name1+", CF_{Top}"+name2+" "+(TString)to_string(i)+" bin");
@@ -231,11 +268,23 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>, vector<dou
     c3->cd();
     WError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
     WError[i-1]->Draw();
-    leg = new TLegend(0.60,0.80,0.9,0.9);
+
+    latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextSize(0.03);
+    latex->SetTextAlign(31); // align right
+    latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+    latex->SetTextAlign(11); // align left
+    latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
+
+    leg = new TLegend(0.60,0.80,0.9,0.88);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(0.02);
     if(TString(sample).Contains("2016APV")) name1 = "2016APV";
     else if(TString(sample).Contains("2016")) name1 = "2016";
     else if(TString(sample).Contains("2017")) name1 = "2017";
-    else name1 = "2018";
+    else if(TString(sample).Contains("2018")) name1 = "2018";
+    else name1 = "Run2";
     if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
     else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
     leg->SetHeader(name1+", CF_{Wjets}"+name2+" "+(TString)to_string(i)+" bin");
@@ -291,9 +340,11 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>> CalcLError
 
   for(int i=1; i<= data[0]->GetNbinsX();i++) {
     name = "LError_"+sample+to_string(i);
+    if(TString(sample).Contains("Iso")) name = "NonIso_WError_"+sample+to_string(i);
     LError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
     c1 = new TCanvas(name.c_str(), "", 900, 900);
     name = "LTError_"+sample+to_string(i);
+    if(TString(sample).Contains("Iso")) name = "NonIso_TError_"+sample+to_string(i);
     TError[i-1] = new TH1D(name.c_str(), "", 4000, -4., 4.);
     c2 = new TCanvas(name.c_str(), "", 900, 900);
     if(i > 1 && TString(sample).Contains("MRR2")) {
@@ -349,32 +400,55 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>> CalcLError
     temp3.push_back(bin_dw);
 
     if(TString(sample).Contains("MRR2")) {
-      LError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      LError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
       TError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
       if(i==1) {
-        LError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
-        TError[i-1]->GetXaxis()->SetRangeUser(-0.1,0.1);
-      }
-      else if (i > 2) {
-        LError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
-        TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+        LError[i-1]->GetXaxis()->SetRangeUser(-0.3,0.3);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      } else if(i==2) {
+        LError[i-1]->GetXaxis()->SetRangeUser(-0.3,0.3);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      } else if(i==3) {
+        LError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      } else if(i==4) {
+        LError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
       }
     } else {
-      LError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
-      TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      LError[i-1]->GetXaxis()->SetRangeUser(-0.5,0.5);
+      TError[i-1]->GetXaxis()->SetRangeUser(-0.4,0.4);
+      if(i<2) {
+        TError[i-1]->GetXaxis()->SetRangeUser(-1.0,1.0);
+      } else if(i>3) {
+        TError[i-1]->GetXaxis()->SetRangeUser(-0.2,0.2);
+      }
     }
 
     c1->cd();
     LError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
     LError[i-1]->Draw();
-    auto leg = new TLegend(0.60,0.80,0.9,0.9);
+
+    TLatex *latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextSize(0.03);
+    latex->SetTextAlign(31); // align right
+    latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+    latex->SetTextAlign(11); // align left
+    latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
+
+    auto leg = new TLegend(0.60,0.80,0.9,0.88);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(0.02);
     if(TString(sample).Contains("2016APV")) name1 = "2016APV";
     else if(TString(sample).Contains("2016")) name1 = "2016";
     else if(TString(sample).Contains("2017")) name1 = "2017";
-    else name1 = "2018";
+    else if(TString(sample).Contains("2018")) name1 = "2018";
+    else name1 = "Run2";
     if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
     else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
     leg->SetHeader(name1+", CF_{Lep+MET, Wjets}"+name2+" "+(TString)to_string(i)+" bin");
+    if(TString(sample).Contains("NonIso")) leg->SetHeader(name1+", CF_{NonIso, W}"+name2+" "+(TString)to_string(i)+" bin");
     leg->Draw();
 
     line = new TLine(bin_up,0,bin_up,1.05*LError[i-1]->GetMaximum());
@@ -407,13 +481,27 @@ tuple<vector<double>, vector<double>, vector<double>, vector<double>> CalcLError
     c2->cd();
     TError[i-1]->GetXaxis()->SetTitle("CF-Iteration");
     TError[i-1]->Draw();
-    leg = new TLegend(0.60,0.80,0.9,0.9);
+
+    latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextSize(0.03);
+    latex->SetTextAlign(31); // align right
+    latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+    latex->SetTextAlign(11); // align left
+    latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
+
+    leg = new TLegend(0.60,0.80,0.9,0.88);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(0.02);
     if(TString(sample).Contains("2016APV")) name1 = "2016APV";
     else if(TString(sample).Contains("2016")) name1 = "2016";
-    else name1 = "2018";
+    else if(TString(sample).Contains("2017")) name1 = "2017";
+    else if(TString(sample).Contains("2018")) name1 = "2018";
+    else name1 = "Run2";
     if(TString(sample).Contains("1Boost")) name2 = "1 Boost jet";
     else if(TString(sample).Contains("2Boost")) name2 = "2 Boost jet";
     leg->SetHeader(name1+", CF_{Lep+MET, Top}"+name2+" "+(TString)to_string(i)+" bin");
+    if(TString(sample).Contains("NonIso")) leg->SetHeader(name1+", CF_{NonIso, Top}"+name2+" "+(TString)to_string(i)+" bin");
     leg->Draw();
 
     line = new TLine(bin_up,0,bin_up,1.05*TError[i-1]->GetMaximum());
@@ -654,6 +742,14 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*, TGraphAsymmErrors*> Correction(TSt
   mg->Add(CF_T);
   mg->Add(CF_W);
   mg->Draw("AP");
+
+  TLatex *latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.03);
+  latex->SetTextAlign(31); // align right
+  latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+  latex->SetTextAlign(11); // align left
+  latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
   if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet final state");
@@ -899,6 +995,13 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> LCorrection(TString period, TStrin
   mg->Add(CF_T);
   mg->Draw("AP");
 
+  auto latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.03);
+  latex->SetTextAlign(31); // align right
+  latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+  latex->SetTextAlign(11); // align left
+  latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
   if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet with Lep+MET final state");
@@ -919,6 +1022,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
   TH1::SetDefaultSumw2();
   TString dir = "/Users/chuh/Dropbox/Analysis/razor/";
   TFile* file0 = TFile::Open(dir+sample);
+  TString iso="NonIso";
 
   TString histname[2][9];
   TString path = "/Counts_vs_"+obj+"/Syst_vs_"+obj;
@@ -1014,7 +1118,7 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
   vector<double> temp3;
   vector<double> temp4;
 
-  Err_CFs = CalcLErrors(CF, bkg, (string)obj+(string)period+(string)region);
+  Err_CFs = CalcLErrors(CF, bkg, (string)iso+(string)obj+(string)period+(string)region);
   temp1 = get<0>(Err_CFs);
   temp2 = get<1>(Err_CFs);
   temp3 = get<2>(Err_CFs);
@@ -1124,6 +1228,13 @@ tuple<TGraphAsymmErrors*, TGraphAsymmErrors*> NonIsoCorrection(TString period, T
   mg->Add(CF_T);
   mg->Draw("AP");
 
+  auto latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.03);
+  latex->SetTextAlign(31); // align right
+  latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+  latex->SetTextAlign(11); // align left
+  latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
 
   auto leg = new TLegend(0.45,0.77,0.9,0.9);
   if(TString(region).Contains("1Boost"))     leg->SetHeader("1 boost jet with Non-isolated lepton final state");
@@ -1166,6 +1277,14 @@ void DrawCF(TString Title, TGraphAsymmErrors* g2, TGraphAsymmErrors* g3, TGraphA
   if(TString(Title).Contains("MRR2")) mg->GetXaxis()->SetTitle("M_{R} #times R^{2}");
   if(TString(Title).Contains("NJet")) mg->GetXaxis()->SetTitle("N_{AK4 jet}");
   mg->Draw("AP");
+
+  auto latex = new TLatex();
+  latex->SetNDC();
+  latex->SetTextSize(0.03);
+  latex->SetTextAlign(31); // align right
+  latex->DrawLatex(0.90, 0.93, Form("138 fb^{-1} (#sqrt{s} = 13 TeV)"));
+  latex->SetTextAlign(11); // align left
+  latex->DrawLatex(0.10,0.93,"CMS Work in Progress");
 
   auto leg = new TLegend(0.55,0.57,0.9,0.9);
   leg->SetHeader(Title);

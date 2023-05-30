@@ -3,7 +3,7 @@ void CalcComparison(TString period="2016", TString region="Val_Signal"){
   TH1::SetDefaultSumw2();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  TString locate = "/Users/huhchanggi/temp/221110/run_2022_11_21";
+  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230131/run_2023_03_20";
   //TString locate = "/Users/huhchanggi/temp/211021/run_2021_10_25";
   TFile* file1 = TFile::Open(locate+".root");
 
@@ -102,15 +102,19 @@ void CalcComparison(TString period="2016", TString region="Val_Signal"){
   }
 }
 void SystComparison(){
-  CalcComparison("2016", "Val_QCD");
-  CalcComparison("2017", "Val_QCD");
-  CalcComparison("2018", "Val_QCD");
+  CalcComparison("run2", "Val_QCD");
+  CalcComparison("run2", "CR_Top16_Top");
+  CalcComparison("2016", "Pre");
+  CalcComparison("2016APV", "Pre");
+  CalcComparison("2017", "Pre");
+  CalcComparison("2018", "Pre");
+  CalcComparison("run2", "Pre");
+  //CalcComparison("BlindData_run2", "SR_Had_V_b_45j");
   //CalcComparison("2016", "Pre");
   //CalcComparison("2016", "CR_Top16_V");
   //CalcComparison("2017", "CR_NonIso_0b_RMTdPhi_1Boost");
   //CalcComparison("2017", "CR_NonIso_b_RMTdPhi_1Boost");
   //CalcComparison("2018", "CR_NonIso_RMT");
-  //CalcComparison("BlindData_2016", "SR_Had_V_b_45j");
   //CalcComparison("BlindData_2017", "SR_Had_V_b_45j");
   //CalcComparison("BlindData_2018", "SR_Had_V_b_45j");
   //CalcComparison("2017", "CR_NonIso_RdPhi");
