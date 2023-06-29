@@ -2,12 +2,11 @@ void CalcComparison(TString period="2016"){
   TH1::SetDefaultSumw2();
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
-  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230131/run_2023_03_09";
+  TString locate = "/Users/chuh/Dropbox/Analysis/razor/230613/run_2023_06_28_step0";
   TFile* file1 = TFile::Open(locate+".root");
 
   TString histname[2][10];
-  TString path = "/Counts_vs_MRR2/Syst_vs_MRR2/";
-  //TString path = "/Counts_vs_MRR2Bins/Syst_vs_MRR2Bins/";
+  TString path = "/Counts_vs_MRR2NoPho/Syst_vs_MRR2NoPho/";
   histname[0][0] = path+"DYToLL_"+period+"_CR_1PhoInv";
   histname[0][1] = path+"GJets_"+period+"_CR_1PhoInv";
   histname[0][2] = path+"Higgs_"+period+"_CR_1PhoInv";
@@ -18,6 +17,7 @@ void CalcComparison(TString period="2016"){
   histname[0][7] = path+"WToLNu_"+period+"_CR_1PhoInv";
   histname[0][8] = path+"ZToNuNu_"+period+"_CR_1PhoInv";
   histname[0][9] = path+"Data_"+period+"_CR_1PhoInv";
+  path = "/Counts_vs_MRR2No2Lep/Syst_vs_MRR2No2Lep/";
   histname[1][0] = path+"DYToLL_"+period+"_CR_2LepInv";
   histname[1][1] = path+"GJets_"+period+"_CR_2LepInv";
   histname[1][2] = path+"Higgs_"+period+"_CR_2LepInv";
@@ -36,7 +36,7 @@ void CalcComparison(TString period="2016"){
       //cout << histname[j][i] << endl;
       bkg2D[j][i] = (TH2D*)file1->Get(histname[j][i]);
       if(bkg2D[j][i] == NULL) {
-        htemp[j][i] = new TH1D(Form("bin%d%d",i,j), "", 1,0,1000);
+        htemp[j][i] = new TH1D(Form("bin%d%d",i,j), "", 1,0,800);
         htemp[j][i]->SetBinContent(1,0);
         htemp[j][i]->SetBinError(1,0);
         continue;
@@ -55,8 +55,8 @@ void CalcComparison(TString period="2016"){
   htemp[0][9]->Add(htemp[0][6],-1);
   htemp[0][9]->Add(htemp[0][7],-1);
   htemp[0][9]->Add(htemp[0][8],-1);
-
   htemp[0][9]->Divide(htemp[0][1]);
+
   htemp[1][9]->Add(htemp[1][1],-1);
   htemp[1][9]->Add(htemp[1][2],-1);
   htemp[1][9]->Add(htemp[1][3],-1);
@@ -67,15 +67,17 @@ void CalcComparison(TString period="2016"){
   htemp[1][9]->Add(htemp[1][8],-1);
   htemp[1][9]->Divide(htemp[1][0]);
 
-  TH1D* hRatio = (TH1D*)htemp[0][9]->Clone();
-  hRatio->Divide(htemp[1][9]);
+  TH1D* hRatio = (TH1D*)htemp[1][9]->Clone();
+  hRatio->Divide(htemp[0][9]);
 
-  cout << period << "Double ratio : " << hRatio->GetBinContent(1) << ", Error : " << hRatio->GetBinError(1) << endl;
+  cout << period << ", Z ratio : " << htemp[1][9]->GetBinContent(1) << ", Error : " << htemp[1][9]->GetBinError(1) << endl;
+  cout << period << ", G ratio : " << htemp[0][9]->GetBinContent(1) << ", Error : " << htemp[0][9]->GetBinError(1) << endl;
+  cout << period << ", Double ratio : " << hRatio->GetBinContent(1) << ", Error : " << hRatio->GetBinError(1) << endl;
 
 }
 void DoubleRatio(){
   CalcComparison("2016");
   CalcComparison("2017");
   CalcComparison("2018");
-  CalcComparison("run2");
+  //CalcComparison("run2");
 }
